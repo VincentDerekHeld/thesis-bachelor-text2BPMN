@@ -1,0 +1,32 @@
+title: result16
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: employee
+    (start) as start
+    [send the request to the travel administration] as activity_9
+    <Is the request approved by all?> as gateway_1
+    [employee rejects the request] as activity_2
+    (end) as end_2
+    [resubmits the request] as activity_3
+    <the approval flow has a positive result?> as gateway_4
+    [request the payment from finance department] as activity_6
+    [finance department makes the payment] as activity_7
+    (end) as end
+    
+lane: travel administration
+    [forward the request to the budget owner] as activity_10
+    [forward the request to the supervisor after the budget owner's approval] as activity_11
+
+lane: finance department
+    [request the payment from finance department] as activity_6
+    [finance department makes the payment] as activity_7
+    
+lane: director
+    [in some cases, director needs to approve the request] as activity_13
+    [director approves the request] as activity_14
+
+start->activity_9->activity_10->activity_11->activity_13->activity_14->gateway_1
+gateway_1-"no"->activity_2->end_2
+gateway_1-"yes"->activity_3->gateway_4
+gateway_4-"yes"->activity_6->activity_7->end
+gateway_4-"no"->end

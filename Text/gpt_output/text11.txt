@@ -1,0 +1,23 @@
+title: result11_LLM
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: HR Clerk
+	(start) as start
+	[a vacancy is reported to HR Clerk] as activity_5
+	[HR Clerk creates a job description] as activity_6
+	[HR Clerk asks the department for clarification] as activity_7
+	[HR Clerk submits the job description for consideration] as activity_8
+	[HR Clerk corrects the job description] as activity_13
+	[HR Clerk resubmits the corrected job description for consideration] as activity_14
+	[HR Clerk posts the job] as activity_3
+	(end) as end
+lane: Department
+	[the department rejects the job description] as activity_11
+	[the department requests a correction to the job description] as activity_12
+	<Is the job description approved?> as gateway_1
+	<> as gateway_1_end
+
+start->activity_5->activity_6->activity_7->activity_8->gateway_1
+gateway_1-"no"->activity_11->activity_12->activity_13->activity_14->gateway_1
+gateway_1-"yes"->activity_3->gateway_1_end
+gateway_1_end->end

@@ -1,0 +1,38 @@
+title: result17_LLM
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: clerks
+    (start) as start
+    [receive a customer request] as activity_12
+    [request demands a solvency check] as activity_13
+    [receive solvency check results] as activity_15
+lane: clerk from the customer advisory
+    <> as gateway_1
+    [informs the customer] as activity_3
+    [delete the customer's request] as activity_4
+    (end) as end_1
+lane: Anna or Hans
+    [develop a payment schedule] as activity_5
+    [send schedule to manager] as activity_16
+    <> as gateway_1_end
+lane: clerks
+    <is the payment schedule approved?> as gateway_7
+    [send an email] as activity_9
+    <> as gateway_7_end
+    (end) as end
+lane: clerk from the customer advisory
+    <> as gateway_2
+    [call the customer] as activity_10
+    [suggest an alternative] as activity_11
+    <> as gateway_2_end
+    [close the request] as activity_18
+
+start->activity_12->activity_13->activity_15->gateway_1
+gateway_1-"not pass the solvency\\ncheck"->activity_3->activity_4->end_1
+gateway_1-"pass the solvency\\ncheck"->activity_5->activity_16->gateway_1_end->gateway_7
+gateway_7-"yes"->activity_9->gateway_7_end
+gateway_7-"no"->gateway_2
+gateway_2->activity_10->gateway_2_end
+gateway_2->activity_11->gateway_2_end
+gateway_2_end->activity_18->gateway_7_end
+gateway_7_end->end

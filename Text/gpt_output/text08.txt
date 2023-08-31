@@ -1,0 +1,22 @@
+title: result08_LLM
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: customer
+    (start) as start
+    [receiving a customer request for a loan amount] as activity_9
+    [the customer receives feedback from the assessor or approver] as activity_12
+    (end) as end
+lane: risk assessment web service
+    [invoke the risk assessment web service to assess the loan request] as activity_10
+    [assess the loan request] as activity_11
+    <> as gateway_1
+    [approve the loan] as activity_4
+    [deny the loan] as activity_6
+    [send the loan request to the approver web service] as activity_8
+    <> as gateway_1_end
+
+start->activity_9->activity_10->activity_11->gateway_1
+gateway_1-"the loan is small,\\nthe customer is\\nlow risk"->activity_4->gateway_1_end
+gateway_1-"the customer is\\nhigh risk"->activity_6->gateway_1_end
+gateway_1-"the customer needs\\nfurther review"->activity_8->gateway_1_end
+gateway_1_end->activity_12->end

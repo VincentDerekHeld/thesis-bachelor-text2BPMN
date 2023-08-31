@@ -1,0 +1,59 @@
+title: result14
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: acme ag
+	(start) as start
+	[receives invoices] as activity_12
+lane: secretariat
+	[receive these] as activity_13
+	[forward these to an accounting employee] as activity_14
+lane: cost center manager
+	[rejects the ap with a note and explanatory statement on the docket] as activity_6
+	[send the copy of the invoice] as activity_7
+	<> as gateway_4_end
+	[proceed] as activity_25
+	[consults the cost center managers] as activity_26
+	[resolve all inconsistencies] as activity_27
+	[send the copy of the invoice] as activity_28
+	[the process continues] as activity_29
+	[all invoice items are ap] as activity_30
+lane: accounting employee
+	[identifies the charging suppliers] as activity_15
+	[create a new instance] as activity_16
+	[checks the invoice items] as activity_17
+	[note the corresponding cost center at the acme ag and the related cost center managers for each position] as activity_18
+	[manager reviews the content accuracy after] as activity_19
+	[receiving the copy of the invoice] as activity_20
+	[manager notes his code one on the docket] as activity_21
+	[manager return the copy of the invoice to the internal mail] as activity_22
+	<mark all items?> as gateway_1
+	[pass the copy of the invoice on the next cost center manager based] as activity_3
+	<> as gateway_1_end
+	[the copy of invoice and the docket move the hands of all cost center managers] as activity_23
+	[mark all positions] as activity_24
+	<inconsistencies exist?> as gateway_4
+	[forwards the copy of the invoice to the commercial manager] as activity_31
+	[makes the commercial audit] as activity_32
+	[issue the approval for payment] as activity_33
+	<the bill amount exceeds eur 20?> as gateway_8
+	[resolve it] as activity_35
+	[complete the commercial audit] as activity_36
+	[gives payment instructions] as activity_37
+	[close the instance] as activity_38
+	(end) as end
+lane: board
+	[wants] as activity_10
+	[check amount] as activity_11
+	<> as gateway_8_end
+	[the copy of the invoice including the docket moves the appropriate signature file] as activity_34
+
+start->activity_12->activity_13->activity_14->activity_15->activity_16->activity_17->activity_18->activity_19->activity_20->activity_21->activity_22->gateway_1
+gateway_1-"yes"->activity_3->gateway_1_end
+gateway_1-"no"->gateway_1_end
+gateway_1_end->activity_23->activity_24->gateway_4
+gateway_4-"yes"->activity_6->activity_7->gateway_4_end
+gateway_4-"no"->gateway_4_end
+gateway_4_end->activity_25->activity_26->activity_27->activity_28->activity_29->activity_30->activity_31->activity_32->activity_33->gateway_8
+gateway_8-"yes"->activity_10->activity_11->gateway_8_end
+gateway_8-"no"->gateway_8_end
+gateway_8_end->activity_34->activity_35->activity_36->activity_37->activity_38->end

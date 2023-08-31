@@ -1,0 +1,29 @@
+title: result06
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: 
+	(start) as start
+	<> as gateway_1
+	[check it] as activity_3
+	[evaluate the severity of the claim] as activity_5
+	<> as gateway_1_end
+	[send relevant forms] as activity_12
+	[return the forms] as activity_13
+	[check forms for completeness] as activity_14
+	<the forms provide all relevant details?> as gateway_6
+	[register the claim] as activity_8
+	[the claims management system ends the claims notification process] as activity_9
+	[inform the claimant] as activity_10
+	[update the forms] as activity_11
+	<> as gateway_6_end
+	[check claimant] as activity_15
+	(end) as end
+
+start->gateway_1
+gateway_1-"the organization\ninsure the claimant"->activity_3->gateway_1_end
+gateway_1-"reject the claim"->gateway_1_end
+gateway_1-""->activity_5->gateway_1_end
+gateway_1_end->activity_12->activity_13->activity_14->gateway_6
+gateway_6-"yes"->activity_8->activity_9->gateway_6_end
+gateway_6-"no"->activity_10->activity_11->gateway_6_end
+gateway_6_end->activity_15->end

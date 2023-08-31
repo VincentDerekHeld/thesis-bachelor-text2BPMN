@@ -1,0 +1,49 @@
+title: result13_LLM
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: marketing staff
+    (start) as start
+    [the first step is to determine the contact details of potential customers] as activity_16
+    [we buy contact details for cold calls] as activity_18
+    [our marketing staff participates in exhibitions] as activity_19
+    [sometimes, you happen to know somebody who is interested in the product] as activity_20
+    [we start calling the potential customers] as activity_23
+lane: call center staff
+    [calling the potential customers] as activity_25
+    [determining the contact person and the budget] as activity_26
+    [the budget be available] as activity_27
+    [we leave person] as activity_7
+    [asking the customer] as activity_3
+lane: head
+    [tries] as activity_28
+    [acquire the customer] as activity_29
+lane: customer
+    <person is interested?> as gateway_1
+    [if not interested, we leave the customer alone] as activity_31
+    <> as gateway_1_end
+    <budget is huge?> as gateway_4
+    <> as gateway_4_end
+    <the customer is the end?> as gateway_8
+lane: sales representative
+    [the next step is a detailed online presentation] as activity_10
+    <> as gateway_8_end
+    [we are waiting for the customer to come back to us] as activity_30
+    <not contact we?> as gateway_13
+    [calling the customer] as activity_15
+    [if not contacted, we send a follow-up call] as activity_32
+    <> as gateway_13_end
+    (end) as end
+    
+start->activity_16->activity_18->activity_19->activity_20->activity_23->activity_25->activity_26->activity_27->gateway_1
+gateway_1-"yes"->activity_3->gateway_1_end
+gateway_1-"no"->activity_31->gateway_1_end
+gateway_1_end->gateway_4
+gateway_4-"yes"->activity_7->gateway_4_end
+gateway_4-"no"->gateway_4_end
+gateway_4_end->activity_28->activity_29->gateway_8
+gateway_8-"yes"->activity_10->gateway_8_end
+gateway_8-"no"->gateway_8_end
+gateway_8_end->activity_30->gateway_13
+gateway_13-"yes"->activity_15->gateway_13_end
+gateway_13-"no"->activity_32->gateway_13_end
+gateway_13_end->end

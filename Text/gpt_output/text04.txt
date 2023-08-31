@@ -1,0 +1,21 @@
+title: result02_LLM
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: party
+	(start) as start
+	[sends a warrant possession request to the client service back office] as activity_1
+	lane: client service back office
+	[receives the warrant possession request] as activity_2
+	[retrieves the requested sct file] as activity_3
+	[forwards the sct warrant possession to queensland police] as activity_4
+	[stores the sct physical file while awaiting a police report] as activity_5
+	[awaits the police report] as activity_6
+	[receives the police report] as activity_7
+	[retrieves the respective sct file corresponding to the report] as activity_8
+	[attaches the new sct document to the respective sct file] as activity_9
+	[stores the expanded sct physical file in the archive] as activity_10
+	lane: some other mc internal staff
+	[receives the expanded physical sct file from the back office] as activity_11
+	(end) as end
+
+start->activity_1->activity_2->activity_3->activity_4->activity_5->activity_6->activity_7->activity_8->activity_9->activity_10->activity_11->end

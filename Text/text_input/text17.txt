@@ -1,0 +1,10 @@
+Whenever Elite Holdings receives a customer request, it demands a solvency check from Miracle Credit.
+At Miracle Credit exactly two clerks perform a solvency check.
+Miracle Credit hands back the results of the solvency check to Elite Holding.
+If the solvency check is not passed, a clerk from the customer advisory informs the customer and deletes the customer's request.
+If the solvency check is passed, Anna or Hans, bot not both, develop a payment schedule.
+Afterward, the schedule is sent to the manager.
+Both he and another clerk with the role supervisor must approve the payment schedule.
+Approve payment schedule may never be executed by Anna or Hans.
+If the payment schedule has been approved, an email is sent to the customer automatically, otherwise, the customer advisory calls the customer to suggest an alternative.
+In both cases, the request must be closed.

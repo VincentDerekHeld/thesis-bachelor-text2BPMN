@@ -1,0 +1,5 @@
+The various declaration documents (domestic and international declarations, pre-paid travel costs and requests for payment) all follow a similar process flow. After submission by the employee, the request is sent for approval to the travel administration. If approved, the request is then forwarded to the budget owner and after that to the supervisor. If the budget owner and supervisor are the same person, then only one of the these steps it taken. In some cases, the director also needs to approve the request.
+
+In all cases, a rejection leads to one of two outcomes. Either the employee resubmits the request, or the employee also rejects the request.
+
+If the approval flow has a positive result, the payment is requested and made.

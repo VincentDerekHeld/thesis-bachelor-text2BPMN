@@ -1,0 +1,32 @@
+title: result17
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: clerks
+	(start) as start
+	[elite holdings receives a customer request] as activity_12
+	[request demands a solvency check] as activity_13
+	[perform a solvency check] as activity_14
+	[miracle credit hands back the results of the solvency check to elite holding] as activity_15
+	<> as gateway_1
+lane: clerk from the customer advisory
+	[informs the customer] as activity_3
+	[delete the customer 's request] as activity_4
+	[anna or hans bot not both develop a payment schedule] as activity_6
+	<> as gateway_1_end
+	[send the schedule to the manager] as activity_16
+	[both manager and another clerk with the role supervisor approve the payment schedule] as activity_17
+	<approve the payment schedule?> as gateway_7
+	[send an email] as activity_9
+	[the customer advisory calls the customer] as activity_10
+	[suggest an alternative] as activity_11
+	<> as gateway_7_end
+	[close the request] as activity_18
+	(end) as end
+
+start->activity_12->activity_13->activity_14->activity_15->gateway_1
+gateway_1-"not pass the solvency\ncheck"->activity_3->activity_4->gateway_1_end
+gateway_1-"pass the solvency\ncheck"->activity_6->gateway_1_end
+gateway_1_end->activity_16->activity_17->gateway_7
+gateway_7-"yes"->activity_9->gateway_7_end
+gateway_7-"no"->activity_10->activity_11->gateway_7_end
+gateway_7_end->activity_18->end

@@ -1,0 +1,45 @@
+title: result01_LLM
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: sales department
+	(start) as start
+	[receives a customer order] as activity_18
+	[creates a new process instance for the order] as activity_19
+	<> as gateway_1
+	[ships the assembled bicycle to the customer] as activity_24
+	[finishes the process instance after shipping the bicycle] as activity_25
+	(end) as end
+	lane: member of sales department
+	[accepts the customer's order for a customized bike] as activity_2
+	[finishes the process instance if the order is rejected] as activity_20
+	(end) as end_20
+	[rejects the customer's order for a customized bike] as activity_3
+	[informs the storehouse and the engineering department about the accepted order] as activity_21
+	<> as gateway_1_end
+lane: storehouse
+	[processes the part list of the order received] as activity_22
+	[checks the required quantity of each part from the order] as activity_23
+	<> as gateway_4
+	[reserve the available part in-house] as activity_6
+	[back-orders the unavailable part] as activity_8
+	<> as gateway_4_end
+	<@parallel> as gateway_9
+	[repeats the checking and ordering procedure for each item on the part list] as activity_10
+	<has the storehouse reserved or back-ordered every item of the part list?> as gateway_12
+lane: engineering department
+	<@parallel> as gateway_9_end
+	[assembles the bicycle after preparation and availability of all parts] as activity_16
+	<> as gateway_12_end
+
+start->activity_18->activity_19->gateway_1
+gateway_1-""->activity_2->activity_20->end_20
+gateway_1-""->activity_3->activity_21->gateway_1_end
+gateway_1_end->activity_22->activity_23->gateway_4
+gateway_4-"the part is in-house"->activity_6->gateway_4_end
+gateway_4-"part is not available in-house"->activity_8->gateway_4_end
+gateway_4_end->gateway_9
+gateway_9->activity_10->gateway_9_end
+gateway_9_end->gateway_12
+gateway_12-"yes"->activity_16->gateway_12_end
+gateway_12-"no"->gateway_12_end
+gateway_12_end->activity_24->activity_25->end

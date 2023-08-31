@@ -1,0 +1,26 @@
+title: result09_LLM
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: any employee
+    (start) as start
+    [submits a vacation request] as activity_11
+lane: immediate supervisor
+    [receives the vacation request] as activity_13
+    <> as gateway_1
+    [the supervisor rejects the vacation request] as activity_2
+    [returns the rejected application to the applicant employee] as activity_6
+    (end) as end_2
+    [the supervisor approves the vacation request and \\n generates a notification to the human resources representative] as activity_3
+    <> as gateway_1_end
+lane: applicant employee
+    [reviews the rejection reasons of the vacation request] as activity_7
+lane: human resources representative
+    [completes the respective management procedures for the approved vacation request] as activity_10
+    <> as gateway_1_end_end
+    (end) as end
+
+start->activity_11->activity_13->gateway_1
+gateway_1-"reject the request"->activity_2->activity_6->end_2
+gateway_1-"approve the request"->activity_3->gateway_1_end
+gateway_1_end->activity_10->gateway_1_end_end
+gateway_1_end_end->end

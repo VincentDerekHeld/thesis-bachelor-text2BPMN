@@ -1,0 +1,25 @@
+title: result11
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: 
+	(start) as start
+	[i am the hr clerk] as activity_4
+	[report a vacancy to me] as activity_5
+	[i create a job description] as activity_6
+	[i ask the department] as activity_7
+	[i submitting the job description for consideration] as activity_8
+	[i wait for the approval] as activity_9
+	[description happen] as activity_10
+	[the department reject description] as activity_11
+	[the department request a correction] as activity_12
+	[i correct the description] as activity_13
+	[i submit description for consideration] as activity_14
+	<approve the description?> as gateway_1
+	[i post the job] as activity_3
+	<> as gateway_1_end
+	(end) as end
+
+start->activity_4->activity_5->activity_6->activity_7->activity_8->activity_9->activity_10->activity_11->activity_12->activity_13->activity_14->gateway_1
+gateway_1-"yes"->activity_3->gateway_1_end
+gateway_1-"no"->gateway_1_end
+gateway_1_end->end

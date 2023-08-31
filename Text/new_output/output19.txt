@@ -1,0 +1,28 @@
+title: result19
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: organization
+	(start) as start
+	[carry the order to cash process out] as activity_1
+	[warehouse & distribution check the purchase order] as activity_2
+	[the erp system of warehouse & distribution carry this operation out] as activity_3
+	[the erp system of warehouse & distribution queries the warehouse database] as activity_4
+	[retrieve it] as activity_5
+lane: sales department
+	[confirms the order] as activity_6
+	[emits an invoice] as activity_7
+	[wait for the payment] as activity_8
+	[ship the product] as activity_9
+	[the process completes the order archival in the sales department] as activity_10
+	[the erp system within warehouse & distribution checks the raw materials availability] as activity_11
+	[accessing the suppliers catalog] as activity_12
+	[obtain the raw materials] as activity_13
+	[confirm the purchase order] as activity_17
+	[archive the purchase order] as activity_18
+	(end) as end
+lane: warehouse department
+	[takes care] as activity_14
+	[manufacturing the product] as activity_15
+	[the process completes] as activity_16
+
+start->activity_1->activity_2->activity_3->activity_4->activity_5->activity_6->activity_7->activity_8->activity_9->activity_10->activity_11->activity_12->activity_13->activity_14->activity_15->activity_16->activity_17->activity_18->end

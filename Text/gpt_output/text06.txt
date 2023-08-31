@@ -1,0 +1,26 @@
+title: result06_LLM
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: organization
+    (start) as start
+    <is the claimant insured?> as gateway_1
+    [check the claim's insurance status] as activity_3
+    [evaluate the severity of the claim] as activity_5
+    [send relevant forms] as activity_12
+    [check forms for completeness] as activity_14
+    <are the forms complete?> as gateway_6
+    [register the claim] as activity_8
+    [inform the claimant to update the forms] as activity_10
+    <> as gateway_6_end
+    (end) as end
+
+lane: claimant
+    [claimant returns the forms] as activity_13
+    [claimant updates the forms] as activity_11
+
+start->gateway_1
+gateway_1-"yes"->activity_3->activity_5->activity_12->activity_13->activity_14->gateway_6
+gateway_1-"no, reject the claim"->(end)
+gateway_6-"yes"->activity_8->gateway_6_end
+gateway_6-"no"->activity_10->activity_11->activity_14
+gateway_6_end->end

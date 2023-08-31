@@ -1,0 +1,38 @@
+title: result05_LLM
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: mail processing unit
+    (start) as start
+lane: mail clerk
+    [sorts the unopened mail from the party into the various business areas] as activity_14
+    [distribute the sorted mail] as activity_15
+lane: registry
+    [receive the distributed mail] as activity_16
+    [open the received mail] as activity_17
+    [sort the opened mail into groups for distribution] as activity_18
+    [register the sorted mail in a manual incoming Mail Register] as activity_19
+lane: assistant registry manager
+    <is the registered mail compliant?> as gateway_1
+    [compile a list of requisition for the non-compliant mail] as activity_3
+    [send the compiled list of requisition back to the party] as activity_4
+    (end) as end_non_compliant_mail
+    [capture the matter details from the compliant mail] as activity_5
+    [provide the captured matter details to the cashier] as activity_6
+    <> as gateway_1_end
+    <@parallel> as gateway_8
+    [put the receipt and copied documents from the compliant mail into an envelope] as activity_9
+    [post the envelope with the receipt and copied documents to the party] as activity_10
+    <@parallel> as gateway_8_end
+    (end) as end_compliant_mail
+lane: cashier
+    [take the applicable fees attached to the provided matter details] as activity_7
+    [capture the details from the party] as activity_11
+    [print the physical court file after capturing the party details] as activity_12
+
+start->activity_14->activity_15->activity_16->activity_17->activity_18->activity_19->gateway_1
+gateway_1-"mail is not compliant"->activity_3->activity_4->end_non_compliant_mail
+gateway_1-"mail is compliant"->activity_5->activity_6->activity_7->gateway_1_end
+gateway_1_end->gateway_8
+gateway_8-"receipt and documents preparation"->activity_9->activity_10->gateway_8_end
+gateway_8-"party details and physical file processing"->activity_11->activity_12->gateway_8_end
+gateway_8_end->end_compliant_mail

@@ -1,0 +1,39 @@
+title: result16_LLM
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: director
+	[approves in some cases] as activity_13
+	[handles request rejection] as activity_15
+	<> as gateway_1
+	(end) as end_2
+lane: employees
+	(start) as start
+	[follows declaration process] as activity_8
+	[sends request for approval] as activity_9
+	[requests reimbursement of pre-paid costs] as activity_25
+	[submits multiple requests] as activity_26
+	[ends trip] as activity_27
+	[submits international declaration] as activity_28
+	[sees multiple declarations] as activity_29
+	(end) as end
+lane: travel administration
+	[approves request] as activity_3
+	[forwards request to budget owner] as activity_10
+lane: budget owner
+	[approves request] as activity_11
+	[forwards request to supervisor] as activity_12
+lane: supervisor
+	[approves request] as activity_14
+	[approves travel permit] as activity_23
+	lane: payment process
+	<is approval positive?> as gateway_4
+	[requests payment] as activity_6
+	[makes payment] as activity_7
+	<> as gateway_4_end
+
+start->activity_8->activity_9->activity_3->gateway_1
+gateway_1-"request approved"->activity_10->activity_11->activity_12->activity_14->activity_13->gateway_4
+gateway_1-"request rejected"->activity_15->end_2
+gateway_4-"yes"->activity_6->activity_7->gateway_4_end
+gateway_4-"no"->gateway_4_end
+gateway_4_end->activity_23->activity_25->activity_26->activity_27->activity_28->activity_29->end

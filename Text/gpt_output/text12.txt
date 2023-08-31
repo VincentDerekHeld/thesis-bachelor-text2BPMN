@@ -1,0 +1,27 @@
+title: result12_LLM
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: Sales Department
+    (start) as start
+    [sends a new order] as activity_4
+    lane: Production Manager
+    [determines the necessary parts, quantities, delivery date] as activity_3
+    [information is present] as activity_5
+lane: PPS System
+    [creates a list of parts to be procured] as activity_9
+    [transfer the data manually to the ERP system] as activity_11
+    <are any parts missing and need procurement?> as gateway_1
+    [procure the missing parts] as activity_12
+    <> as gateway_1_end
+lane: Production Department
+    <start production and quality check> as gateway_2
+    [schedule production] as activity_13
+    [employee starts the production process] as activity_15
+    [check the order for its quality] as activity_16
+    <end of production and quality check> as gateway_2_end
+    (end) as end
+
+start->activity_4->activity_3->activity_5->activity_9->activity_11->gateway_1
+gateway_1-"yes"->activity_12->gateway_1_end
+gateway_1-"no"->gateway_1_end
+gateway_1_end->gateway_2->activity_13->activity_15->activity_16->gateway_2_end->end

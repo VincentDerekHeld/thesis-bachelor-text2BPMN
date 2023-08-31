@@ -1,0 +1,44 @@
+title: result10_LLM
+width: 10000
+colourtheme: BLUEMOUNTAIN
+lane: any employee
+	(start) as start
+	[submits an office supply request] as activity_17
+lane: immediate supervisor
+	[receives the request] as activity_19
+	<> as gateway_1
+	[asks for a change in the request] as activity_2
+	[approves the request] as activity_3
+	[rejects the request and ends the process] as activity_6
+	<> as gateway_1_end
+lane: employee
+	[makes the requested change if asked] as activity_8
+	[receives the returned request] as activity_9
+	[reviews the comments for the change request] as activity_10
+lane: purchase department
+	[receives the approved request] as activity_12
+	[makes quotations and selects a vendor] as activity_13
+	<the selected vendor is not valid?> as gateway_14
+	[chooses a different vendor if the current one is not valid] as activity_16
+	<> as gateway_14_end
+	[confirms the selected vendor] as activity_21
+	[generates and sends a purchase order] as activity_22
+	[waits for the vendor to deliver the product and the invoice] as activity_24
+	[receives the invoice] as activity_26
+lane: system
+	[sends a purchase order] as activity_23
+	[sends a notification of the result to the user] as activity_27
+	lane: vendor
+	[delivers the product] as activity_25
+	lane: user
+	(end) as end
+
+start->activity_17->activity_19->gateway_1
+gateway_1-"ask the request"->activity_2->gateway_1_end
+gateway_1-"approve the request"->activity_3->gateway_1_end
+gateway_1-"reject the request"->activity_6
+activity_6->end
+gateway_1_end->activity_8->activity_9->activity_10->activity_12->activity_13->gateway_14
+gateway_14-"yes"->activity_16->gateway_14_end
+gateway_14-"no"->gateway_14_end
+gateway_14_end->activity_21->activity_22->activity_23->activity_24->activity_25->activity_26->activity_27->end
