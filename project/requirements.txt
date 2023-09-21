@@ -1,0 +1,6 @@
+benepar==0.2.0
+coreferee==1.4.0
+nltk==3.5
+processpiper==0.4.3
+spacy==3.5.0
+spacy_wordnet==0.1.0
