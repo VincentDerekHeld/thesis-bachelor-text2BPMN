@@ -4,14 +4,13 @@ import benepar
 from spacy_wordnet.wordnet_annotator import WordnetAnnotator
 
 import BPMNStarter
+from project.Constant import DEBUG
 
 if __name__ == '__main__':
     print("Start loading spacy model and adding components")
     nlp = spacy.load('en_core_web_trf')
     nlp_similarity = spacy.load("en_core_web_lg")
-    DEBUG = False
-    debug = DEBUG
-    if debug:
+    if DEBUG:
         nlp.add_pipe('benepar', config={'model': 'benepar_en3'})
     else:
         nlp.add_pipe('benepar', config={'model': 'benepar_en3_large'})
@@ -29,6 +28,3 @@ if __name__ == '__main__':
             BPMNStarter.start_task(nlp, nlp_similarity, input_path, title, output_path, debug=DEBUG)
         except Exception as e:
             print(f"Error for text {i}: {e}")
-
-#python -m coreferee install en
-#https://raw.githubusercontent.com/richardpaulhudson/coreferee/master/models/coreferee_model_en.zip

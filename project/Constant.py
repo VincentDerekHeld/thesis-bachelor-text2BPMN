@@ -1,3 +1,4 @@
+DEBUG = False
 PERSON_CORRECTOR_LIST = ["resource provisioning", "customer service", "support", "support office", "support officer",
                          "client service back office", "master", "masters", "assembler ag", "acme ag",
                          "acme financial accounting", "secretarial office", "office", "registry", "head", "storehouse",

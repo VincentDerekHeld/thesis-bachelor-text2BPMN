@@ -12,19 +12,7 @@ from BPMNCreator import create_bpmn_model
 from Utilities import text_pre_processing
 
 
-def download_all_dependencies():
-    import nltk
-    import ssl
-    try:
-        _create_unverified_https_context = ssl._create_unverified_context
-    except AttributeError:
-        pass
-    else:
-        ssl._create_default_https_context = _create_unverified_https_context
 
-    benepar.download('benepar_en3')
-    benepar.download('benepar_en3_large')
-    nltk.download('wordnet')
 
 
 def start_task(nlp,  nlp_similarity, input_path, title, output_path, debug=False):
@@ -32,15 +20,6 @@ def start_task(nlp,  nlp_similarity, input_path, title, output_path, debug=False
     warnings.filterwarnings('ignore')
     # download_all_dependencies()
 
-    """nlp = spacy.load('en_core_web_trf')
-
-    if debug:
-        nlp.add_pipe('benepar', config={'model': 'benepar_en3'})
-    else:
-        nlp.add_pipe('benepar', config={'model': 'benepar_en3_large'})
-
-    nlp.add_pipe("spacy_wordnet", after='tagger')
-    nlp.add_pipe('coreferee')"""
 
     text_input = open(input_path, 'r').read().replace('\n', ' ')
 
