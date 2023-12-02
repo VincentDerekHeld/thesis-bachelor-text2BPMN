@@ -13,8 +13,6 @@ This thesis is a contribution to develop a state-of-the-art approach for transfo
 Keywords: Natural Language Processing, Business Process Compliance, Natural Language to Process, Business Process Model Generation
 
 
-
-
 ## Installation:
 1. Download the gitHub repository
 2. Install the required packages with the right version: 
@@ -24,6 +22,11 @@ pip install -r requirements.txt
 3. Run the Setup.py to download all benepar dependencies:
 ```
 python  project/Setup.py
+```
+4. [Set OPENAI_API_KEY as Environment Variable for the LLM](https://help.openai.com/en/articles/5112595-best-practices-for-api-key-safety)
+5. Set working directory to project folder:
+```
+pip os.chdir(os.path.dirname(os.path.abspath(__file__)))
 ```
 
 ## Execution:

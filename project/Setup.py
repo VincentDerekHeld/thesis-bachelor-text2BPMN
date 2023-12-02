@@ -14,3 +14,8 @@ def download_all_dependencies():
     benepar.download('benepar_en3')
     benepar.download('benepar_en3_large')
     nltk.download('wordnet')
+    print("All dependencies downloaded.")
+
+
+if __name__ == "__main__":
+    download_all_dependencies()

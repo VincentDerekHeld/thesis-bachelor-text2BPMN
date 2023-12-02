@@ -4,7 +4,7 @@ from typing import Optional
 from spacy.matcher.matcher import Matcher
 from spacy.tokens import Span, Token
 
-from Constant import SUBJECT_PRONOUNS, OBJECT_PRONOUNS, STRING_EXCLUSION_LIST
+from Constant import SUBJECT_PRONOUNS, OBJECT_PRONOUNS, STRING_EXCLUSION_LIST, DEBUG
 
 
 def find_dependency(dependencies: [str], sentence: Span = None, token: Token = None, deep=False) -> [Token]:
@@ -151,7 +151,6 @@ def anaphora_resolver(obj):
         return
     resolved_words = resolve_reference(obj.token)
     obj.resolved_token.extend(resolved_words)
-
 
 
 def needs_resolve_reference(word: Token) -> bool:
@@ -364,3 +363,33 @@ def text_pre_processing(text: str) -> str:
     # replace two or more spaces with one
     text = re.sub(r"\s{2,}", " ", text)
     return text
+
+
+def write_to_file(text: str, path: str):
+    """
+    write the given text to the given path
+    Args:
+        text: the given text
+        path: the given path
+    """
+    with open(path, "w") as file:
+        file.write(text)
+    if DEBUG: print(f"Created Text: {path}")
+
+
+def open_file(path: str) -> str:
+    """
+    Open the file in the given path and return the content of the file without line breaks.
+    Args:
+        path: The given path to the file.
+
+    Returns:
+        The content of the file in the form of a string.
+    """
+    try:
+        with open(path, "r") as file:
+            return file.read().replace('\n', ' ')
+    except FileNotFoundError:
+        raise FileNotFoundError(f"The file at path {path} was not found.")
+    except IOError as e:
+        raise IOError(f"An error occurred while reading the file at path {path}: {e}")

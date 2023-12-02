@@ -1,4 +1,11 @@
-DEBUG = False
+DEBUG = False  # True: use small model, False: use large model
+
+LLM_ATR = True  # True: activate the LLM-assisted text refinement
+
+filter_irrelevant_information = True  # Filter irrelevant information from the input text using the LLM, therefore LLM_ATR must be True
+transform_implicit_actions = True  # Transform implicit actions into explicit actions using the LLM, therefore LLM_ATR must be True
+resolve_enumeration = True  # Resolve enumerations using the LLM, therefore LLM_ATR must be True
+
 PERSON_CORRECTOR_LIST = ["resource provisioning", "customer service", "support", "support office", "support officer",
                          "client service back office", "master", "masters", "assembler ag", "acme ag",
                          "acme financial accounting", "secretarial office", "office", "registry", "head", "storehouse",

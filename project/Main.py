@@ -1,3 +1,6 @@
+import os
+import warnings
+
 import spacy
 import coreferee
 import benepar
@@ -8,6 +11,9 @@ from project.Constant import DEBUG
 
 if __name__ == '__main__':
     print("Start loading spacy model and adding components")
+    os.environ['TRANSFORMERS_NO_ADVISORY_WARNINGS'] = 'true'
+    warnings.filterwarnings('ignore')
+
     nlp = spacy.load('en_core_web_trf')
     nlp_similarity = spacy.load("en_core_web_lg")
     if DEBUG:
@@ -19,12 +25,12 @@ if __name__ == '__main__':
     nlp.add_pipe('coreferee')
     print("Finished loading spacy model and adding components")
 
-    for i in range(1, 23):
-        input_path = f"/Users/vincentderekheld/PycharmProjects/bachelor-thesis/Evaluation/text_input/Text{i}.txt"
-        output_path = f"/Users/vincentderekheld/PycharmProjects/bachelor-thesis/Evaluation/baseline_yu/baseline_yu{i}.png"
-        title = f"Text{i}_baseline_yu"
+    for i in range(1, 2):
+        input_path = f"/Users/vincentderekheld/PycharmProjects/text2BPMN-vincent/evaluation/gold_standard/Text{i}.txt"
+        title = f"text{i}_our_approach"  # Title has to be without spaces, use underscore instead
+        output_path = f"/Users/vincentderekheld/PycharmProjects/text2BPMN-vincent/evaluation/our_approach/{title}.png"
         print(f"Start generating model for {title}")
         try:
-            BPMNStarter.start_task(nlp, nlp_similarity, input_path, title, output_path, debug=DEBUG)
+            BPMNStarter.start_task(nlp, nlp_similarity, input_path, title, output_path)
         except Exception as e:
             print(f"Error for text {i}: {e}")
