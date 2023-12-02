@@ -1,6 +1,9 @@
 benepar==0.2.0
-coreferee==1.4.0
+coreferee==1.4.1
 nltk==3.5
 processpiper==0.4.3
 spacy==3.5.0
 spacy_wordnet==0.1.0
+en-core-web-trf @ https://github.com/explosion/spacy-models/releases/download/en_core_web_trf-3.5.0/en_core_web_trf-3.5.0-py3-none-any.whl#sha256=8902305d2ced83d98a8e88efd93ea8970a70dda9bb24b0024a8b798d1cc913d5
+en-core-web-lg @ https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.5.0/en_core_web_lg-3.5.0-py3-none-any.whl#sha256=c8ac64840c1eb3e3ca7bd38bd1e1c48fb0faeb2449d54d01d5ce629af4595775
+protobuf==3.20.1

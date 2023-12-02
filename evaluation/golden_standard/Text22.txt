@@ -1,0 +1,7 @@
+The load switching device is a completely independent of the meter device and serves as a possible replacement for a ripple control device or a timer. The load switching device has its own communication interface and can thus make contact with the control panel.
+In principle, the relays follow a switching program specified by the central system and stored in the load switching device. However, it must be possible from the central system to override the circuit program with a spontaneous command (eg relay XY "OFF" or "ON"). The next opposite command (either from the switching table or from an external source) changes the state of the switching device.
+The position of each relay or each switching cycle specified by the switching program must be reported back to the central system. The relay settings must also be visually displayed on site.
+
+The central system sends a command to override a relay ("off" or "on"). The service interface is used to override a relay ("Off" or "On").
+
+The corresponding relay in the load switching device switches to the desired status, reports this back to the central system and the position of the relay on the load switching device is also visible and a logbook entry is made.

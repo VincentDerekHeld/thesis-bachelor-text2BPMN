@@ -1,0 +1,6 @@
+In the course of the so-called opt-out regulation, it must be possible for customers who refuse to install an intelligent electricity meter to deactivate the load profile recording in the meter. Activation / deactivation of load profile recording must be possible remotely (WAN interface). Each of these changes must be logged in the relevant legal logbook of the meter.
+If the customer is opt-out, it must be displayed on the meter accordingly (for example, display, LED).
+
+Opt-out request of the customer to implement at the NL.
+
+Load profile recording is activated / deactivated and the information has been transmitted to the central system as ALARM or EVENT. A logbook entry has been made in the meter and the current status OPT-OUT is displayed on the meter.

@@ -1,0 +1,9 @@
+Exceeding an active power limit set in the meter and activated shuts down the customer system.
+For the customer, immediate reclosing on site, ie directly at the meter, must be possible.
+The shutdown, the message of the reclosing and the exceeding of the power threshold must be able to be transmitted to the central system as ALARM or EVENT and also visualized on the meter. Breaker status is, e.g., OFF and READY.
+An entry is also created in the logbook.
+In the logbook, in addition to changing the breaker status, the reason for the shutdown, e.g. "Power limit exceeded by xxx watts" can be logged.
+
+Exceeding the power threshold, for example in the context of the basic supply.
+
+Exceeding the power threshold was entered in the logbook of the meter and transmitted to the central system as an ALARM or EVENT.

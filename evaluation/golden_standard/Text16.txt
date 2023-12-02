@@ -1,0 +1,13 @@
+The prepayment function is realized via the central system.
+The terminal only acts as a switching device.
+The central system generates the shutdown command by comparing credits with consumption.
+The comparison of credits with actual consumption value should be made periodically.
+The basis is the daily readings.
+A "real-time monitoring" is therefore not necessary.
+Shutdown may only be carried out in compliance with legal conditions.
+Each status change of the terminal must be displayed on the device and also create an entry in the logbook.
+There may be a corresponding customer information about the current balance from the central system to the customer.
+
+Credit or credit limit is consumed and shutdown time is within the legally allowed time window.
+
+The supply of electrical energy is interrupted and the status of the breaker is displayed on the terminal, an entry in the logbook of the terminal is generated and the status is transmitted to the central system.

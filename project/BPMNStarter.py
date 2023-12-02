@@ -27,12 +27,12 @@ def download_all_dependencies():
     nltk.download('wordnet')
 
 
-def start_task(input_path, title, output_path, debug=False):
+def start_task(nlp,  nlp_similarity, input_path, title, output_path, debug=False):
     os.environ['TRANSFORMERS_NO_ADVISORY_WARNINGS'] = 'true'
     warnings.filterwarnings('ignore')
     # download_all_dependencies()
 
-    nlp = spacy.load('en_core_web_trf')
+    """nlp = spacy.load('en_core_web_trf')
 
     if debug:
         nlp.add_pipe('benepar', config={'model': 'benepar_en3'})
@@ -40,7 +40,7 @@ def start_task(input_path, title, output_path, debug=False):
         nlp.add_pipe('benepar', config={'model': 'benepar_en3_large'})
 
     nlp.add_pipe("spacy_wordnet", after='tagger')
-    nlp.add_pipe('coreferee')
+    nlp.add_pipe('coreferee')"""
 
     text_input = open(input_path, 'r').read().replace('\n', ' ')
 
