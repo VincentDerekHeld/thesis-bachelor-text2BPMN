@@ -4,7 +4,9 @@ from spacy_wordnet.wordnet_annotator import WordnetAnnotator
 
 
 def can_be_person_or_system(full_noun: str, main_noun) -> bool:
+    #TODO: maybe we can use here instead of PERSON_CORRECTOR_LIST also simlarity to the words in the list
     full_noun = full_noun.strip()
+    print(f"full noun: {full_noun.lower()}, if full_noun.lower() in PERSON_CORRECTOR_LIST {full_noun.lower() in PERSON_CORRECTOR_LIST}")
     if full_noun.lower() in PERSON_CORRECTOR_LIST:
         return True
     elif main_noun.text.lower() in SUBJECT_PRONOUNS:

@@ -2,6 +2,8 @@ from Model.ExtractedObject import ExtractedObject
 from spacy.tokens import Token
 from Utilities import str_utility, string_list_to_string
 
+from project.Utilities import determinate_full_name, tokens_to_string
+
 
 class Actor(ExtractedObject):
     def __init__(self, token):
@@ -31,3 +33,33 @@ class Actor(ExtractedObject):
             str_utility(self.token, actor)
 
         return string_list_to_string(actor)
+
+    # TODO 23-12-02: Done Similarity of Actors
+    def determinate_full_name_vh(self):
+        """
+        :param token: Token that is part of the extended name
+        :return: full name in right order as string
+        """
+        if self.token is not None:
+            full_name_tokens = [self.token]  # TODO: should token (parameter) be added to the list?
+            for subchild in self.token.children:
+                if subchild.dep_ == "amod":
+                    full_name_tokens.extend(determinate_full_name(subchild))
+                if subchild.dep_ == "compound":
+                    full_name_tokens.extend(determinate_full_name(subchild))
+
+                #if subchild.dep_ == "conj":  # TODO also work for or? Only for ex.5 NOUN AND NOUN
+                 #   full_name_tokens.extend(determinate_full_name(subchild))
+
+                #if subchild.dep_ == "cc":
+                  #  full_name_tokens.extend(determinate_full_name(subchild))
+
+                if subchild.dep_ == "prep":
+                    full_name_tokens.extend(determinate_full_name(subchild))
+
+                if subchild.dep_ == "pobj":
+                    full_name_tokens.extend(determinate_full_name(subchild))
+
+            sorted_tokens = tokens_to_string(sorted(full_name_tokens, key=lambda token: token.i))
+            return sorted_tokens
+

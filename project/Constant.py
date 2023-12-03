@@ -1,6 +1,6 @@
-DEBUG = False  # True: use small model, False: use large model
+DEBUG = True  # True: use small model, False: use large model
 
-LLM_ATR = True  # True: activate the LLM-assisted text refinement
+LLM_ATR = False  # True: activate the LLM-assisted text refinement
 
 filter_irrelevant_information = True  # Filter irrelevant information from the input text using the LLM, therefore LLM_ATR must be True
 transform_implicit_actions = True  # Transform implicit actions into explicit actions using the LLM, therefore LLM_ATR must be True
@@ -11,7 +11,7 @@ PERSON_CORRECTOR_LIST = ["resource provisioning", "customer service", "support",
                          "acme financial accounting", "secretarial office", "office", "registry", "head", "storehouse",
                          "atm", "crs", "company", "garage", "kitchen", "sommelier", "department", "ec", "sp", "mpo",
                          "mpoo", "mpon", "msp", "mspo", "mspn", "go", "pu", "ip", "inq", "fault detector",
-                         "mail processing unit"]
+                         "mail processing unit", "top management"]
 
 REAL_ACTOR_DETERMINERS = ["person", "social_group", "software system"]
 

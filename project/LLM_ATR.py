@@ -21,7 +21,7 @@ def LLM_assisted_refinement(text_input: str, nlp, title: str):
         result: the LLM-assisted refined text
     """
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
-    debug_mode = DEBUG
+    debug_mode = True #TODO: change to DEBUG
     doc = nlp(text_input)  # Create doc object from input text for identification of listings and for sentence splitting
 
     text_contains_listings = False
@@ -190,7 +190,7 @@ def LLM_assisted_refinement(text_input: str, nlp, title: str):
 
     result = ""
     generate_response(inital_prompt + doc.text)
-    if DEBUG: print(f"Text contains listings: {text_contains_listings}")
+    if debug_mode: print(f"Text contains listings: {text_contains_listings}")
     if text_contains_listings:  #
         new_text = generate_response(prompt_enumeration_resolution + outro + doc.text + answer_outro)
         nlp = spacy.load('en_core_web_trf')
@@ -203,7 +203,7 @@ def LLM_assisted_refinement(text_input: str, nlp, title: str):
         #  next(doc.sents)
         for prompt in prompts:
             if current_sent.isspace() or current_sent.__len__() == 0:
-                print(f"Sent No. {number} has been returned as empty message.")
+                if debug_mode: print(f"Sent No. {number} has been returned as empty message.")
                 next(doc.sents)
                 break  # TODO: check if this is correct
             # intro
@@ -211,8 +211,8 @@ def LLM_assisted_refinement(text_input: str, nlp, title: str):
             current_sent = generate_response(query)
         result = result + " " + current_sent + "\n"
     result = result.strip()
-    if DEBUG: print("**** Full description: **** \n" + result.replace("\n", " "))
-    if DEBUG: write_to_file(result, f"/Users/vincentderekheld/PycharmProjects/text2BPMN-vincent/evaluation/LLM_ATR_results/{title}.txt") #TODO: change path
+    if debug_mode: print("**** Full description: **** \n" + result.replace("\n", " "))
+    write_to_file(result, f"/Users/vincentderekheld/PycharmProjects/text2BPMN-vincent/evaluation/LLM_ATR_results/{title}.txt") #TODO: change path, if DEBUG:
     return result
 
 

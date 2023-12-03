@@ -393,3 +393,96 @@ def open_file(path: str) -> str:
         raise FileNotFoundError(f"The file at path {path} was not found.")
     except IOError as e:
         raise IOError(f"An error occurred while reading the file at path {path}: {e}")
+
+
+# TODO 2023-12-02: Alternatives and Utilities
+def tokens_to_string(tokens):
+    strBuilder = ""
+    for token in tokens:
+        strBuilder = strBuilder + token.text + " "
+    return strBuilder
+
+def determinate_full_name(token):
+    """
+    :param token: Token that is part of the extended name
+    :return: full name in right order as string
+    """
+    full_name_tokens = [token]  # TODO: should token (parameter) be added to the list?
+    for subchild in token.children:
+        if subchild.dep_ == "amod":
+            full_name_tokens.extend(determinate_full_name(subchild))
+        if subchild.dep_ == "compound":
+            full_name_tokens.extend(determinate_full_name(subchild))
+
+        if subchild.dep_ == "conj":  # TODO also work for or? Only for ex.5 NOUN AND NOUN
+            full_name_tokens.extend(determinate_full_name(subchild))
+
+        if subchild.dep_ == "cc":
+            full_name_tokens.extend(determinate_full_name(subchild))
+
+        if subchild.dep_ == "prep":
+            full_name_tokens.extend(determinate_full_name(subchild))
+
+        if subchild.dep_ == "pobj":
+            full_name_tokens.extend(determinate_full_name(subchild))
+
+    sorted_tokens = sorted(full_name_tokens, key=lambda token: token.i)
+    print("sorted_tokens:", sorted_tokens) #TODO: delete
+    return sorted_tokens
+
+
+def compare_actors_similarity(Actor1: str, Actor2: str, nlp):
+    criteria_similarity_score = 0.5
+    criteria_similarity_ratio = 0.5
+    similarity_score = compare_actors_with_similarity(Actor1, Actor2, nlp)
+    similarity_ratio = compare_actors_with_token(Actor1, Actor2, nlp)
+    result = similarity_score > criteria_similarity_score and similarity_ratio > criteria_similarity_ratio
+    #print("{:<60}{:<60}{:<20}{:<10}{:<10}".format(Actor1, Actor2, similarity_score, similarity_ratio, result.__str__()))  # TODO: delete
+    return result
+
+
+def compare_actors_with_similarity(Actor1: str, Actor2: str, nlp):
+    doc1 = nlp(Actor1)
+    doc2 = nlp(Actor2)
+    similarity_score = round(doc1.similarity(doc2), 2)
+    return similarity_score
+
+
+def compare_actors_with_token(Actor1: str, Actor2: str, nlp):
+    # Process the actor names using spaCy
+    doc1 = nlp(Actor1)
+    doc2 = nlp(Actor2)
+
+    # Filter out tokens where token.is_stop = True
+    tokens1 = [token for token in doc1 if not token.is_stop]
+    tokens2 = [token for token in doc2 if not token.is_stop]
+
+    # Count the number of tokens for each actor
+    num_tokens1 = len(tokens1)
+    num_tokens2 = len(tokens2)
+
+    # Initialize variables to count matching tokens
+    matching_tokens = 0
+
+    # Compare the tokens in the actor with fewer tokens with tokens in the other actor
+    if num_tokens1 <= num_tokens2:
+        for token1 in tokens1:
+            for token2 in tokens2:
+                if token1.lemma_ == token2.lemma_:
+                    matching_tokens += 1
+                    break  # Break the inner loop if a match is found
+    else:
+        for token2 in tokens2:
+            for token1 in tokens1:
+                if token2.lemma_ == token1.lemma_:
+                    matching_tokens += 1
+                    break  # Break the inner loop if a match is found
+
+    # Calculate the average number of tokens between the two actors
+    avg_tokens = (num_tokens1 + num_tokens2) / 2.0
+
+    # Calculate the similarity ratio
+    similarity_ratio = matching_tokens / avg_tokens if avg_tokens > 0 else 0.0
+
+    # print("Similarity similarity_ratio:", similarity_ratio)
+    return similarity_ratio

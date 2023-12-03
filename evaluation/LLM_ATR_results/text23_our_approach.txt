@@ -1,0 +1,7 @@
+For each relay in the load switching device, an independent, independent of the other relay switching program should be configurable.
+ It should be possible to subdivide the circuit program into daily, weekly, seasonal and annual programs.
+ The switching program is managed centrally and transmitted to the load switching device via the communication paths.
+ For control purposes, the circuit program must also be read-back.
+ Any change to the circuit program, regardless of whether it is remotely executed, must be logged in a logbook.
+ The central system sends changed switching programs to the load switching device.
+ The load switching device receives the changed switching programs and records this in the logbook.

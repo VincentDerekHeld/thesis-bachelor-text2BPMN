@@ -1,0 +1,5 @@
+There is an elimination of the terminal on-site by means of a mobile device via the service interface (WZ).
+ In order to meet the strict data protection regulations, the cryptographic parameters that authorize the device to be switched off must be stored on the mobile device.
+ It must therefore not be possible with these cryptographic parameters to turn off several or all terminals of the terminal equipment.
+ The breaker of the terminal has switched off the system, indicating this on the device.
+ An entry in the logbook of the terminal has been created.

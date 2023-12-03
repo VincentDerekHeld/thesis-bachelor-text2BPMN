@@ -7,7 +7,7 @@ from Model.SentenceContainer import SentenceContainer
 from Structure.Activity import Activity
 from Structure.Block import ConditionBlock, AndBlock, ConditionType
 from Structure.Structure import LinkedStructure, Structure
-from Utilities import find_dependency, find_action, contains_indicator, find_process
+from Utilities import find_dependency, find_action, contains_indicator, find_process, compare_actors_similarity
 from WordNetWrapper import hypernyms_checker, verb_hypernyms_checker
 
 
@@ -339,7 +339,35 @@ def build_linked_list(container_list: [SentenceContainer]):
     return link
 
 
-def get_valid_actors(container_list: [SentenceContainer]) -> list:
+
+def get_valid_actors(container_list: [SentenceContainer], nlp) -> list:
+    """
+    iterate the container list and get all the actors that are real actors
+    and checks if there are actors that are similar to each other, as they are the same actor but with different names
+    Args:
+        container_list: The container that contains the action.
+    Returns:
+        A list of actors that are real actors.
+    """
+    result = []
+    for container in container_list:
+        for process in container.processes:
+            if process.actor is not None:
+
+                process.actor.determinate_full_name_vh()
+                if Constant.DEBUG: print(f"Actor: {process.actor.full_name}, process.actor.is_real_actor: {process.actor.is_real_actor}") #TODO: delete
+                if process.actor.is_real_actor:
+                    temp_bool_add = True
+                    for actor in result:
+                        if compare_actors_similarity(process.actor.full_name, actor, nlp):
+                            temp_bool_add = False
+                            process.actor.full_name = actor
+                            break
+                    if temp_bool_add:
+                        result.append(process.actor.full_name)
+
+    return result
+def get_valid_actors_old(container_list: [SentenceContainer]) -> list:
     """
     iterate the container list and get all the actors that are real actors
 

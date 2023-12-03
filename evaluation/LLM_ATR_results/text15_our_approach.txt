@@ -1,0 +1,9 @@
+The aim is to remotely interrupt the supply of electrical energy for an object, as a result of a customer change or due to open collection claims, via the central system.
+ The shutdown takes place by opening the breaker present in the terminal.
+ From the central system, a shutdown command is transmitted to the affected terminal.
+ The terminal executes the received command, returns the status of the shutdown to the central system and creates an entry in the logbook.
+ This status must be visible on the terminal.
+ With collection there is no possibility of an immediate on-site reconnection by the customer after the blocking.
+ Input is either deregistration of current customer, customer moves out without new tenant or customer does not pay after admonition process.
+ The supply of electrical energy is interrupted, the status "interrupted" is displayed at the terminal and in the central system.
+ An entry in the logbook of the terminal has been created.

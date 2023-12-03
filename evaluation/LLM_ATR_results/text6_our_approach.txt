@@ -1,0 +1,4 @@
+The organization shall plan, establish, implement and maintain an audit programme(s), including the frequency, methods, responsibilities, planning requirements and reporting.
+ When establishing the internal audit programme(s), the organization shall consider the importance of the processes concerned and the results of previous audits.
+ The organization shall define the audit criteria and scope for each audit, select auditors and conduct audits, and ensure that the results of the audits are reported to relevant management.
+ Documented information shall be available as evidence of the implementation of the audit programme(s) and the audit results.

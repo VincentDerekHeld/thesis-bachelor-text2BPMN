@@ -18,7 +18,8 @@ def create_bpmn_model(structure_list: [Structure], actor_list: list, title: str,
         save_path: the path to save the BPMN model
         theme: the theme of the BPMN model, default is BLUEMOUNTAIN
     """
-    input_syntax = create_bpmn_description(structure_list, actor_list, title, theme=theme)
+    input_syntax = create_bpmn_description1(structure_list, actor_list, title,
+                                            theme=theme)  # TODO: create_bpmn_description1
     print(input_syntax)
     render_bpmn_model(input_syntax, save_path)
 
@@ -32,6 +33,141 @@ def render_bpmn_model(input_syntax: str, path: str):
 
     """
     render(input_syntax, path)
+
+
+def create_bpmn_description1(structure_list: [Structure], actor_list: list, title: str,
+                             theme: str = "BLUEMOUNTAIN") -> str:
+    """
+    Create the input syntax for the BPMN model based on the list of structures and actors.
+    construct the lanes according to the actors
+    and then add the activities and gateways to the lanes according to the actor of the activity
+    Args:
+        structure_list: the list of structures
+        actor_list: the list of valid actors
+        title: the title of the BPMN model
+        theme: the theme of the BPMN model, default is BLUEMOUNTAIN
+
+    Returns:
+        the constructed syntax for rendering the BPMN model
+    """
+    result = ""
+    result += "title: " + title + "\n"
+    result += "width: " + str(10000) + "\n"
+    result += "colourtheme: " + theme + "\n"
+
+    lanes = {}
+    print(f"Actor List: {actor_list}") #TODO: me
+    connections = []
+
+    for actor in actor_list:
+        lanes[actor] = []
+
+    if len(actor_list) < 2: #there is only one actor or none in the list
+        lanes["dummy"] = []
+
+    key = None
+    connection_id = 0
+    last_gateway = None
+    for structure in structure_list:
+        print(f"previous key: {key}")
+        if structure_list.index(structure) == 0:
+            key = belongs_to_lane(structure_list, lanes, structure, key)
+            print(f"Key of (start): {key}")
+            lanes[key].append("(start) as start")
+            connections.append("start")
+
+        if isinstance(structure, Activity):
+            key = belongs_to_lane(structure_list, lanes, structure, key)
+            print(f" Activity-Key: {key}")
+            append_to_lane(key, lanes, connection_id, connections, structure, last_gateway)
+        elif isinstance(structure, ConditionBlock):
+            end_gateway = "gateway_" + str(structure.id) + "_end"
+
+            if len(structure.branches[0]["condition"]) > 0:
+                key = belongs_to_lane(structure_list, lanes, structure.branches[0]["condition"][0], key)
+            append_to_lane(key, lanes, connection_id, connections, structure, last_gateway)
+
+            for branch in structure.branches:
+                connection_id += 1
+                if structure.is_simple() and branch["type"] == ConditionType.IF:
+                    connections.append("gateway_" + str(structure.id) + '-"yes"')
+                elif structure.is_simple() and branch["type"] == ConditionType.ELSE:
+                    connections.append("gateway_" + str(structure.id) + '-"no"')
+                else:
+                    condition = ""
+                    for c in branch["condition"]:
+                        condition += str(c)
+                        if branch["condition"].index(c) != len(branch["condition"]) - 1:
+                            condition += ", "
+                    index = 0
+                    for i in range(len(condition)):
+                        index += 1
+                        if condition[i] == " " and index > 15:
+                            condition = condition[:i] + "\\n" + condition[i + 1:]
+                            index = 0
+                    connections.append("gateway_" + str(structure.id) + '-"' + condition + '"')
+
+                need_end_gateway = True
+                for activity in branch["actions"]:
+                    key = belongs_to_lane(structure_list, lanes, activity, key)
+                    append_to_lane(key, lanes, connection_id, connections, activity, last_gateway)
+                    if activity.is_end_activity:
+                        need_end_gateway = False
+                        end_id = "end_" + str(activity.id)
+                        early_end_gateway = "(end) as end_" + str(activity.id)
+                        lanes[key].append(early_end_gateway)
+                        connections[connection_id] += "->" + end_id
+                        continue
+
+                if need_end_gateway:
+                    connections[connection_id] += "->" + end_gateway
+
+            lanes[key].append("<> as " + end_gateway)
+            connection_id += 1
+            last_gateway = end_gateway
+        elif isinstance(structure, AndBlock):
+            end_gateway = "gateway_" + str(structure.id) + "_end"
+
+            append_to_lane(key, lanes, connection_id, connections, structure, last_gateway)
+
+            for branch in structure.branches:
+                connection_id += 1
+                connections.append("gateway_" + str(structure.id))
+                for activity in branch:
+                    key = belongs_to_lane(structure_list, lanes, activity, key)
+                    append_to_lane(key, lanes, connection_id, connections, activity, last_gateway)
+                connections[connection_id] += "->" + end_gateway
+
+            lanes[key].append("<@parallel> as " + end_gateway)
+            connection_id += 1
+            last_gateway = end_gateway
+
+        if structure.is_end_activity:
+            lanes[key].append("(end) as end")
+            if connection_id < len(connections):
+                connections[connection_id] += "->end"
+            else:
+                connections.append(last_gateway)
+                connections[connection_id] += "->end"
+
+    for lane in lanes:
+        print(f"VH: Lane: {lane} len(lane.strip()){len(lane.strip())}")
+
+        if lane == "dummy":
+            if len(lanes["dummy"]) > 0:
+                result += "lane: \n"
+        else:
+            result += "lane: " + lane + "\n"
+
+        for element in lanes[lane]:
+            result += "\t" + element + "\n"
+
+    result += "\n"
+
+    for connection in connections:
+        result += connection + "\n"
+
+    return result
 
 
 def create_bpmn_description(structure_list: [Structure], actor_list: list, title: str,
@@ -59,6 +195,7 @@ def create_bpmn_description(structure_list: [Structure], actor_list: list, title
 
     if len(actor_list) < 2:
         lanes["dummy"] = []
+        # if actor = None -> dummy else actor
     else:
         for actor in actor_list:
             lanes[actor] = []
@@ -213,7 +350,56 @@ def append_to_lane(key: str, lanes: {}, connection_id: int, connections: list, s
         connections[connection_id] += "->" + connection_name
 
 
-def belongs_to_lane(activity_list: [Structure], lanes: {}, structure: Structure, previous_actor: Optional[str]) -> str:
+def belongs_to_lane_edited(activity_list: [Structure], lanes: {}, structure: Structure, previous_actor: Optional[str]) -> str:
+    """
+    This method is used to determine which lane the activity belongs to.
+    Args:
+        activity_list: the list of activities
+        lanes: the dictionary of lanes
+        structure: the current structure that is being processed
+        previous_actor: the actor of the previous activity
+
+    Returns:
+        the name of the lane, if the lane has length 1, then it returns "dummy"
+    """
+    # if len(lanes) == 1:
+    #   return "dummy"
+
+    if previous_actor is None:
+        for activity in activity_list:
+            if isinstance(activity, Activity):
+                if activity.process.actor is not None:
+                    print(
+                        f"previous_actor: {previous_actor}, activity.process.actor.full_name: {activity.process.actor.full_name}")
+                    for key in lanes.keys():
+                         if not " " in activity.process.actor.full_name:
+                            print(f"Case 0 Key: {key}")
+                            if activity.process.actor.full_name in key:
+                                print(f"Case 1: Key: {key}")
+                                return key
+                    else:
+                        print("Case 1.5")
+                        if activity.process.actor.full_name == key:
+                            print("Case 2")
+                            return activity.process.actor.full_name
+                else:
+                    return "dummy"
+
+    else:
+        if structure.process.actor is None:
+            print("Case 3")
+            return previous_actor
+        else:
+            if structure.process.actor.full_name in lanes.keys():
+                print("Case 4")
+                return structure.process.actor.full_name
+            else:
+                print("Case 5")
+                return previous_actor
+
+
+def belongs_to_lane(activity_list: [Structure], lanes: {}, structure: Structure,
+                           previous_actor: Optional[str]) -> str:
     """
     This method is used to determine which lane the activity belongs to.
     Args:
