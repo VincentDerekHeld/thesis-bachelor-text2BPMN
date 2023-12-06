@@ -1,7 +1,8 @@
 """
 This file contains an alternative approach to extract the elements.
 It is based on the description of the approach in the following paper.
-Unfortunately, the paper does not contain any information about the code.
+Unfortunately, the paper does not contain any information about the code. Therefore, the code is based on the description in the paper. It is not the original code.
+
 @article{sunDesigntimeBusinessProcess2023,
 	title = {Design-{Time} {Business} {Process} {Compliance} {Assessment} {Based} on {Multi}-{Granularity} {Semantic} {Information}},
 	issn = {0920-8542, 1573-0484},
@@ -17,29 +18,19 @@ Unfortunately, the paper does not contain any information about the code.
 	file = {Sun et al. - 2023 - Design-time business process compliance assessment.pdf:/Users/vincentderekheld/Zotero/storage/NESYRM42/Sun et al. - 2023 - Design-time business process compliance assessment.pdf:application/pdf},
 }
 """
-
-# from project.AnalyzeSentence import is_active, determine_actor, determine_predicate, determine_object, create_actor, create_action
-from typing import Any, Optional
-
-import benepar, spacy
-from spacy import Language
+from typing import Optional
 from spacy.tokens import Span, Token
 from project.ModelBuilder import create_actor, create_action
 
-"""
-def extract_elements(sentence, process):
-    sentence_is_active = is_active(sentence)
-
-    actor = determine_actor(sentence, sentence_is_active)
-    process.actor = create_actor(actor)
-
-    verb = determine_predicate(sentence, sentence_is_active)
-    obj = determine_object(verb, sentence_is_active)
-    process.action = create_action(verb, obj)
-"""
 subject_dependencies = ["nsubj", "nsubjpass", "csubj", "csubjpass", "agent", "expl"]
 object_dependencies = ["dobj", "dative", "attr", "oprd", "pobj", "iobj", "obj"]
 check_for_actor_marker: bool = False
+
+labels = ["MD", "NP", "VP", "IN", "PP", "SBAR", "SINV"]  # labels are in detail described in the paper
+
+ACTOR_MARKERS = (
+    "organization", "Organization", "the organization", "The organization", "sales", "department", "sales department",
+    "the sales", "the sales department")
 
 
 def immediately_dominates(A: Span, B: Span):
@@ -47,8 +38,12 @@ def immediately_dominates(A: Span, B: Span):
     return B._.parent == A
 
 
-# Another function to check if A dominates B
-def dominates(A: Span, B: Span):
+def dominates(A: Span, B: Span) -> bool:
+    """Checks if a span A dominates a span B in a syntactic dependency tree using spaCy. Notation: A << B
+        Args:   A: Span of Spacy tokens in a syntactic dependency tree
+                B: Span of Spacy tokens in a syntactic dependency tree
+        Result: True if A dominates B, False otherwise
+    """
     current = B
     while current._.parent is not None:
         if current._.parent == A:
@@ -57,14 +52,16 @@ def dominates(A: Span, B: Span):
     return False
 
 
-def are_sisters(span_A: Span, span_B: Span):
-    # Assuming span_A and span_B are two spans you're comparing
-    print("span_A.root.head:", span_A.root.head)
-    print("span_B.root.head:", span_B.root.head)
+def are_sisters(span_A: Span, span_B: Span) -> bool:
+    """Checks if two spans are sisters in a syntactic dependency tree using spaCy. Notation A $ B
+        Args:   A: Span of Spacy tokens in a syntactic dependency tree
+                B: Span of Spacy tokens in a syntactic dependency tree
+        Results: True if A and B are sisters, False otherwise
+    """
     return span_A.root.head == span_B.root.head
 
 
-def check_labels(sent, labels):
+def check_labels(sent: Span, labels):
     """
     Checks if the given labels exist in the constituency parse of the doc.
     Returns a dictionary with the labels and their occurrence status.
@@ -75,23 +72,20 @@ def check_labels(sent, labels):
     return results
 
 
-def determine_NP(sent) -> Span:
+def determine_NP(sent: Span) -> Span:
+    """checking for a specific type of constituent: Noun Phrase ('NP')
+        Args:  sent: Span of Spacy tokens in a syntactic dependency tree
+        Result: The first noun phrase in the sentence
+    """
     for const in sent._.constituents:
         if len(const._.labels) > 0 and const._.labels[0] == 'NP':
             return const
 
 
-labels = ["MD", "NP", "VP", "IN", "PP", "SBAR", "SINV"]  # labels are in detail described in the paper
-
-ACTOR_MARKERS = (
-    "organization", "Organization", "the organization", "The organization", "sales", "department", "sales department",
-    "the sales", "the sales department")
-
-
 def check_for_label_dominating_actor_marker(sent: Span, label: str):  # subject dependency and NP < (actormarker)
     """
-    Check if there's a noun phrase (NP) that immediately
-    dominates any of the specified actor markers.
+    Check if there's a noun phrase (NP) that immediately dominates any of the specified actor markers.
+    Notation: subject dependency and NP < (actormarker)
     """
     results = []
     for subtree in sent._.constituents:
@@ -103,18 +97,12 @@ def check_for_label_dominating_actor_marker(sent: Span, label: str):  # subject 
     return results
 
 
-def check_conditions1(sent: Span):  # subject dependency and NP < (actormarker)
+def check_conditions1(sent: Span):
     """
-    Check if there's a noun phrase (NP) that immediately
-    dominates any of the specified actor markers.
+    Check if there's a noun phrase (NP) that immediately dominates any of the specified actor markers. Notation: subject dependency and NP < (actormarker)
     """
     print("sent._.constituents", list(sent._.constituents))
     for subtree in sent._.constituents:
-        """if len(subtree._.labels) > 0:
-            #print("subtree._.labels", subtree._.labels, "len(subtree._.labels) > 0", len(subtree._.labels) > 0, "subtree._.labels[0] == NP ", subtree._.labels[0], "Token:", any(
-                token.text in ACTOR_MARKERS for token in subtree).__str__())
-        for token in subtree:
-            print("Token:", token.text)"""
         if len(subtree._.labels) > 0 and subtree._.labels[0] == "NP" and any(
                 token.text in ACTOR_MARKERS for token in subtree):
             for token in subtree:
@@ -127,10 +115,8 @@ def check_conditions1(sent: Span):  # subject dependency and NP < (actormarker)
 def check_conditions2(sent: Span):
     is_object_dependency = any(token.dep_ in ["dobj", "iobj", "obj"] for token in sent)
     is_passive_voice = any(token.dep_ == "auxpass" for token in sent)
-
     if not (is_object_dependency and is_passive_voice):
         return False
-
     for constituent in sent._.constituents:
         if constituent.label_ == "PP":
             for child in constituent._.children:
@@ -138,24 +124,19 @@ def check_conditions2(sent: Span):
                     for sibling in child._.siblings:
                         if sibling.label_ == "NP" and any(token.text in ACTOR_MARKERS for token in sibling):
                             return True
-
     return False
 
 
 def check_conditions3(doc):
     # Check for object dependency
     is_object_dependency = any(token.dep_ in ["dobj", "iobj", "obj"] for token in doc)
-
     # Check for active voice (ensure no passive auxiliaries are present)
     is_active_voice = not any(token.dep_ == "auxpass" for token in doc)
-
     if not (is_object_dependency and is_active_voice):
         return False
-
     for constituent in doc._.constituents:
         if constituent.label_ == "NP" and any(token.text in ACTOR_MARKERS for token in constituent):
             return True
-
     return False
 
 
@@ -167,7 +148,8 @@ def find_constituents_by_label(sent: Span, label: str) -> list[Span]:
     return results
 
 
-def determine_actor_vh(sentence: Span) -> Span | None:
+def determine_actor_sun(sentence: Span) -> Span | None:
+    """This metod is used to eveluate the approach of Sun et. al to extract the actor of a sentence."""
     'Condition 1: subject dependency and NP < (actormarker)'
     for possible_actor in check_for_label_dominating_actor_marker(sentence, "NP"):
         if any(token.dep_ in subject_dependencies for token in possible_actor):
@@ -175,34 +157,15 @@ def determine_actor_vh(sentence: Span) -> Span | None:
 
     'Condition 2: object dependency and passive voice and PP < IN$(NP < (actormarker))'
     for possible_actor in check_for_label_dominating_actor_marker(sentence, "NP"):
-        print("possible_actor:", possible_actor)
         is_object_dependency = any(token.dep_ in object_dependencies for token in possible_actor)
-        print("is_object_dependency:", is_object_dependency)
         is_passive_voice = any(token.dep_ == "auxpass" for token in sentence)
-        print("is_passive_voice:", is_passive_voice)
         if not (is_object_dependency and is_passive_voice):
-            print("not (is_object_dependency and is_passive_voice)")
             return None
         else:
-            print("(is_object_dependency and is_passive_voice)")
-            print("find_constituents_by_label", find_constituents_by_label(sentence, "PP"))
-            print("possible_actor:", possible_actor)
             for possible_PP in find_constituents_by_label(sentence, "PP"):
-                print("possible_PP:", possible_PP)
                 for token in possible_PP:
-                    print("child.text:", token.text, token.dep_, token.pos_, token.tag_)
                     if token.text == 'by' and 'IN' == token.tag_:
                         span_by = sentence[token.i:token.i + 1]
-                        print(span_by)
-                        print(immediately_dominates(possible_PP, span_by))
-                        print(are_sisters(span_by, possible_actor))
-                        print("Success!")
-                # if are_sisters(possible_PP, possible_actor):
-                #   for child in possible_PP._.children:
-                #      print("child.text:", child.text, "child.dep_:", child.dep_)
-                #     if child.text == "by":
-                #        return possible_actor
-
     'Condition 3: object dependency and active voice and NP < (actormarker))'
     for possible_actor in check_for_label_dominating_actor_marker(sentence, "NP"):
         is_object_dependency = any(token.dep_ in object_dependencies for token in possible_actor)
@@ -227,7 +190,6 @@ def determine_object_vh(predicate: Token, active: bool) -> Optional[Token]:
     if active:
         if predicate is None:
             return None
-
         obj = find_dependency(["dobj"], token=predicate)
         if len(obj) == 0:
             prep = find_dependency(["prep"], token=predicate)
@@ -243,27 +205,19 @@ def determine_object_vh(predicate: Token, active: bool) -> Optional[Token]:
 def extract_elements_vh(sentence, process):
     from project.AnalyzeSentence import is_active
     sentence_is_active = is_active(sentence)
-    actor = determine_actor_vh(sentence)
-    from project.AnalyzeSentence import determine_actor
-    print("determine_actor_vh: actor:", actor)
-    # print(actor.__len__())
+    actor = determine_actor_sun(sentence)
     if actor:
         actor = actor[actor.__len__() - 1]  # TODO:
     print("actor:", actor)
     # actor = determine_actor(actor, sentence_is_active)
     process.actor = create_actor(actor)
-
     from project.AnalyzeSentence import determine_predicate
     verb = determine_predicate(sentence, sentence_is_active)
-    ##TODO: find modal verb as well
-
     obj = determine_object_vh(verb, sentence_is_active)
     process.action = create_action(verb, obj)
     if verb:
         for child in verb.children:
             if child.dep_ == "aux": print(f"Extraction: modal verb:{child.text}")
-    # print(f"Extraction: verb: {verb}, verb.subtree: {' '.join(x.text for x in verb.children)}")
-
     if process.action is not None:
         process.action.active = sentence_is_active
         for conjunct in process.action.token.conjuncts:
@@ -272,54 +226,4 @@ def extract_elements_vh(sentence, process):
             if sentence.start < conjunct.i < sentence.end:
                 conjunct_obj = determine_object_vh(conjunct, sentence_is_active)
                 conjunct_action = create_action(conjunct, conjunct_obj)
-                ##TODO: find modal verb as well
                 process.action.conjunction.append(conjunct_action)
-
-
-"""
-for const in sent._.constituents:
-    if len(const._.labels) > 0 and const._.labels[0] == 'NP':
-        print(const.text)"""
-
-"""
- for token in sentence:
-    print("token.sent._.labels:", token.sent._.labels)
-    if token.dep_ in subject_dependencies and "NP" in token.sent._.labels:
-        return token.text
-    elif token.dep_ in object_dependencies and sentence_is_active == False and "PP" in token.sent._.labels:
-        return token.text
-    elif token.dep_ in object_dependencies and sentence_is_active == True and "NP" in token.sent._.labels:
-        return token.text
-"""
-
-"""sent = list(doc.sents)[0]
-constituents = list(sent._.constituents)
-for const in constituents:
-    # if len(const._.labels) > 0:
-    print("const:", const, "*" * 20, "const._.labels", const._.labels)
-
-A: Span = constituents[0]
-print("A:", A.text)  # This is just an example, choose your own constituents.
-B: Span = constituents[3]
-print("B:", B.text)
-print(dominates(A, B).__str__())"""
-#
-
-# determine_actor_vh(sent, True)
-# print(are_sisters(sent._.constituents[0], sent._.constituents[1]).__str__())
-# for const in sent._.constituents:
-#   if len(const._.labels) > 0:
-#      print("const:", const, "*" * 20, "const._.labels", const._.labels)
-
-
-# if len(const._.labels)> 0 and const._.labels[0] == 'VP':
-#   print(const.text)
-
-# sent = list(doc.sents)[0]
-# print(sent._.parse_string)
-# (S (NP (NP (DT The) (NN time)) (PP (IN for) (NP (NN action)))) (VP (VBZ is) (ADVP (RB now))) (. .))
-# print(sent._.labels)
-# ('S',)
-# print(list(sent._.children)[0])
-
-# print(determine_actor_vh(sent, True))

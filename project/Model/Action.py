@@ -8,6 +8,8 @@ from typing import Optional
 
 from Utilities import str_utility, string_list_to_string, index_of
 
+from project.Constant import add_modal_verbs, MODAL_VERBS
+
 
 class LinkType(Enum):
     TO_PREV = 1
@@ -52,6 +54,13 @@ class Action(ExtractedObject):
         result = []
         if self.token is None:
             return ""
+
+        if add_modal_verbs:
+            if self.aux:
+                print(f"Action: Aux: {self.aux.text}") #TODO: me modal verbs
+                #TODO: implement LLM function, that checks if the aux is a modal verb
+                if self.aux in MODAL_VERBS:
+                    str_utility(self.aux, result)
 
         if self.active:
             str_utility(self.token, result)

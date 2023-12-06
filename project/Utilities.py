@@ -4,7 +4,8 @@ from typing import Optional
 from spacy.matcher.matcher import Matcher
 from spacy.tokens import Span, Token
 
-from Constant import SUBJECT_PRONOUNS, OBJECT_PRONOUNS, STRING_EXCLUSION_LIST, DEBUG
+from Constant import SUBJECT_PRONOUNS, OBJECT_PRONOUNS, STRING_EXCLUSION_LIST, DEBUG, filter_example_sentences_regex
+from alternative_approaches.filtering_irrelevant_information import filter_example_sentences
 
 
 def find_dependency(dependencies: [str], sentence: Span = None, token: Token = None, deep=False) -> [Token]:
@@ -362,6 +363,7 @@ def text_pre_processing(text: str) -> str:
     text = re.sub("[\(\[].*?[\)\]]", "", text)
     # replace two or more spaces with one
     text = re.sub(r"\s{2,}", " ", text)
+    if filter_example_sentences_regex: text = filter_example_sentences(text)
     return text
 
 
@@ -402,6 +404,7 @@ def tokens_to_string(tokens):
         strBuilder = strBuilder + token.text + " "
     return strBuilder
 
+
 def determinate_full_name(token):
     """
     :param token: Token that is part of the extended name
@@ -427,7 +430,6 @@ def determinate_full_name(token):
             full_name_tokens.extend(determinate_full_name(subchild))
 
     sorted_tokens = sorted(full_name_tokens, key=lambda token: token.i)
-    print("sorted_tokens:", sorted_tokens) #TODO: delete
     return sorted_tokens
 
 
@@ -437,7 +439,7 @@ def compare_actors_similarity(Actor1: str, Actor2: str, nlp):
     similarity_score = compare_actors_with_similarity(Actor1, Actor2, nlp)
     similarity_ratio = compare_actors_with_token(Actor1, Actor2, nlp)
     result = similarity_score > criteria_similarity_score and similarity_ratio > criteria_similarity_ratio
-    #print("{:<60}{:<60}{:<20}{:<10}{:<10}".format(Actor1, Actor2, similarity_score, similarity_ratio, result.__str__()))  # TODO: delete
+    # print("Similarity{:<60}{:<60}{:<20}{:<10}{:<10}".format(result.__str__(), Actor1, Actor2, similarity_score, similarity_ratio))  # TODO: delete
     return result
 
 

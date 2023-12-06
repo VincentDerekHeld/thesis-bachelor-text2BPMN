@@ -1,17 +1,36 @@
-DEBUG = True  # True: use small model, False: use large model
+DEBUG = False  # True: use small model, False: use large model
+
+LLM_real_actor = True  # True: use LLM to decide if real actor based on LLM
 
 LLM_ATR = False  # True: activate the LLM-assisted text refinement
+
+LLM_syntax_improval = False # True: activate the LLM-assisted syntax improvement
+
+add_modal_verbs = False  # Add modal verbs to the input text using the LLM, therefore LLM_ATR must be True
+
+actors_similarity = False  # Use the spacy_similarity to determine if two actors are the same, therefore LLM_ATR must be True
+
+resolve_first_lane_problem = True # determine, why the actor is not printed as lane
+
+resolve_syntax_problems = True  # Resolve syntax problems by filtering keywords
+
 
 filter_irrelevant_information = True  # Filter irrelevant information from the input text using the LLM, therefore LLM_ATR must be True
 transform_implicit_actions = True  # Transform implicit actions into explicit actions using the LLM, therefore LLM_ATR must be True
 resolve_enumeration = True  # Resolve enumerations using the LLM, therefore LLM_ATR must be True
+
+filter_example_sentences_regex = False  # Filter example sentences from the input text using the regular expression
+remove_introduction_sentence_with_spacy = False  # Remove introduction sentences from the input text using the spacy_similarity
+
+
+MODAL_VERBS = ["can", "could", "may", "might", "must", "shall", "should", "will", "would"]
 
 PERSON_CORRECTOR_LIST = ["resource provisioning", "customer service", "support", "support office", "support officer",
                          "client service back office", "master", "masters", "assembler ag", "acme ag",
                          "acme financial accounting", "secretarial office", "office", "registry", "head", "storehouse",
                          "atm", "crs", "company", "garage", "kitchen", "sommelier", "department", "ec", "sp", "mpo",
                          "mpoo", "mpon", "msp", "mspo", "mspn", "go", "pu", "ip", "inq", "fault detector",
-                         "mail processing unit", "top management"]
+                         "mail processing unit"]
 
 REAL_ACTOR_DETERMINERS = ["person", "social_group", "software system"]
 

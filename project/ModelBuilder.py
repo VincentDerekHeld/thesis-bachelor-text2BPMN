@@ -35,7 +35,7 @@ def create_actor(main_actor: Token) -> Optional[Actor]:
     actor.full_name = complete_name.strip()
 
     if not WordNetWrapper.can_be_person_or_system(complete_name, main_actor):
-        actor.is_real_actor = False #TODO: check if this is correct, as  "top management" is not a real actor, but hould be
+        actor.is_real_actor = False  # TODO: check if this is correct, as  "top management" is not a real actor, but hould be
     return actor
 
 

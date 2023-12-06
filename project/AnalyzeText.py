@@ -9,6 +9,7 @@ from Structure.Block import ConditionBlock, AndBlock, ConditionType
 from Structure.Structure import LinkedStructure, Structure
 from Utilities import find_dependency, find_action, contains_indicator, find_process, compare_actors_similarity
 from WordNetWrapper import hypernyms_checker, verb_hypernyms_checker
+from alternative_approaches.LLM_bool import decide_if_end_of_process
 
 
 def determine_marker(container: SentenceContainer, nlp: Language):
@@ -217,6 +218,42 @@ def determine_end_activities(structure_list: [Structure]):
     for structure in structure_list:
         if structure_list.index(structure) == len(structure_list) - 1:
             structure.is_end_activity = True
+            # print(f"structure.is_end_activity: {structure.is_end_activity} Case 1: {structure}")
+        elif isinstance(structure, ConditionBlock):
+            for branch in structure.branches:
+                for activity in branch["actions"]:
+                    if activity.process.action.active:
+                        actor = activity.process.actor
+                    else:
+                        actor = activity.process.action.object
+                    if actor is not None:
+                        if hypernyms_checker(actor.token, ["event"]) and \
+                                verb_hypernyms_checker(activity.process.action.token, ["end"]):
+                            activity.is_end_activity = True
+                            # print(f"activity.is_end_activity: {activity.is_end_activity} Case 2: {activity}")
+                            continue
+                        elif activity.process.action.object is not None and \
+                                hypernyms_checker(activity.process.action.object.token, ["message"]) and \
+                                verb_hypernyms_checker(activity.process.action.token, ["refuse"]):
+                            activity.is_end_activity = True
+                            # print(f"activity.is_end_activity: {activity.is_end_activity} Case 3: {activity}")
+
+
+def determine_end_activities_backup(structure_list: [Structure]):
+    # THis is a backup function for the end activity determination
+    """
+    determine whether an activity is an end activity. there are two cases:
+    1. the last activity in the list is an end activity
+    2. If the verb of an activity or its hypernyms has meaning of "end" and the actor or its hypernyms has meaning of
+     "event", then it is an end activity
+    3. If the verb of an activity or its hypernyms has meaning of "refuse" and the object or its hypernyms has meaning
+     of "message", then it is an end activity
+    Args:
+        structure_list: the list of structures that contains the activities.
+    """
+    for structure in structure_list:
+        if structure_list.index(structure) == len(structure_list) - 1:
+            structure.is_end_activity = True
         elif isinstance(structure, ConditionBlock):
             for branch in structure.branches:
                 for activity in branch["actions"]:
@@ -339,7 +376,6 @@ def build_linked_list(container_list: [SentenceContainer]):
     return link
 
 
-
 def get_valid_actors(container_list: [SentenceContainer], nlp) -> list:
     """
     iterate the container list and get all the actors that are real actors
@@ -349,43 +385,31 @@ def get_valid_actors(container_list: [SentenceContainer], nlp) -> list:
     Returns:
         A list of actors that are real actors.
     """
-    result = []
-    for container in container_list:
-        for process in container.processes:
-            if process.actor is not None:
-
-                process.actor.determinate_full_name_vh()
-                if Constant.DEBUG: print(f"Actor: {process.actor.full_name}, process.actor.is_real_actor: {process.actor.is_real_actor}") #TODO: delete
-                if process.actor.is_real_actor:
-                    temp_bool_add = True
-                    for actor in result:
-                        if compare_actors_similarity(process.actor.full_name, actor, nlp):
-                            temp_bool_add = False
-                            process.actor.full_name = actor
-                            break
-                    if temp_bool_add:
+    if Constant.actors_similarity:
+        "my approach"
+        result = []
+        for container in container_list:
+            for process in container.processes:
+                if process.actor is not None:
+                    if process.actor.is_real_actor and process.actor.full_name not in result:
+                        temp_bool_add = True
+                        for actor in result:
+                            if compare_actors_similarity(process.actor.determinate_full_name_vh(), actor, nlp):
+                                temp_bool_add = False
+                                process.actor.full_name = actor
+                                break
+                        if temp_bool_add:
+                            result.append(process.actor.full_name)
+        return result
+    else:
+        result = []
+        for container in container_list:
+            for process in container.processes:
+                if process.actor is not None:
+                    if process.actor.is_real_actor and process.actor.full_name not in result:
                         result.append(process.actor.full_name)
 
-    return result
-def get_valid_actors_old(container_list: [SentenceContainer]) -> list:
-    """
-    iterate the container list and get all the actors that are real actors
-
-    Args:
-        container_list: The container that contains the action.
-
-    Returns:
-        A list of actors that are real actors.
-
-    """
-    result = []
-    for container in container_list:
-        for process in container.processes:
-            if process.actor is not None:
-                if process.actor.is_real_actor and process.actor.full_name not in result:
-                    result.append(process.actor.full_name)
-
-    return result
+        return result
 
 
 def adjust_actor_list(valid_actors: [str]) -> list:

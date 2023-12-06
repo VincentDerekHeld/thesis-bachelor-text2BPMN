@@ -35,24 +35,24 @@ class Actor(ExtractedObject):
         return string_list_to_string(actor)
 
     # TODO 23-12-02: Done Similarity of Actors
-    def determinate_full_name_vh(self):
+    def determinate_full_name_vh(self) -> str:
         """
         :param token: Token that is part of the extended name
         :return: full name in right order as string
         """
         if self.token is not None:
-            full_name_tokens = [self.token]  # TODO: should token (parameter) be added to the list?
+            full_name_tokens = [self.token]
             for subchild in self.token.children:
                 if subchild.dep_ == "amod":
                     full_name_tokens.extend(determinate_full_name(subchild))
                 if subchild.dep_ == "compound":
                     full_name_tokens.extend(determinate_full_name(subchild))
 
-                #if subchild.dep_ == "conj":  # TODO also work for or? Only for ex.5 NOUN AND NOUN
-                 #   full_name_tokens.extend(determinate_full_name(subchild))
+                # if subchild.dep_ == "conj":  # TODO also work for or? Only for ex.5 NOUN AND NOUN
+                #   full_name_tokens.extend(determinate_full_name(subchild))
 
-                #if subchild.dep_ == "cc":
-                  #  full_name_tokens.extend(determinate_full_name(subchild))
+                # if subchild.dep_ == "cc":
+                #  full_name_tokens.extend(determinate_full_name(subchild))
 
                 if subchild.dep_ == "prep":
                     full_name_tokens.extend(determinate_full_name(subchild))
@@ -62,4 +62,3 @@ class Actor(ExtractedObject):
 
             sorted_tokens = tokens_to_string(sorted(full_name_tokens, key=lambda token: token.i))
             return sorted_tokens
-

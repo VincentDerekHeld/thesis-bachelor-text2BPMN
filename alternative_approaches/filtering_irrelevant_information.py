@@ -1,3 +1,8 @@
+import re
+
+from spacy.tokens.doc import Doc
+
+
 def remove_introduction_sentence(doc: Doc, nlp_similarity, nlp) -> Doc:
     """
     @param doc: The document that should be checked for an introduction sentence.
@@ -19,3 +24,10 @@ def remove_introduction_sentence(doc: Doc, nlp_similarity, nlp) -> Doc:
         new_text = ' '.join([sent.text for sent in sentences[1:]])
         doc = nlp(new_text)
     return doc
+
+
+def filter_example_sentences(text: str) -> str:
+    stop_items = [".", "!", ";"]
+    stop_items_pattern = ''.join(stop_items)
+    example_patterns = r'(for example|example given|e\.g\.)[^' + stop_items_pattern + ']*?(?=[' + stop_items_pattern + '])'
+    return re.sub(example_patterns, '', text)

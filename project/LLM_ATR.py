@@ -3,6 +3,7 @@ import requests
 import spacy
 
 from project.Constant import DEBUG, resolve_enumeration, filter_irrelevant_information, transform_implicit_actions
+from project.LLM_API import generate_response_GPT3_instruct_model
 from project.Utilities import write_to_file, open_file
 
 
@@ -21,7 +22,7 @@ def LLM_assisted_refinement(text_input: str, nlp, title: str):
         result: the LLM-assisted refined text
     """
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
-    debug_mode = True #TODO: change to DEBUG
+    debug_mode = True  # TODO: change to DEBUG
     doc = nlp(text_input)  # Create doc object from input text for identification of listings and for sentence splitting
 
     text_contains_listings = False
@@ -144,55 +145,12 @@ def LLM_assisted_refinement(text_input: str, nlp, title: str):
             2. Condition: The original wording of the sentence must be retained.
         3) Do not comment on this step and return carefully the full input sentence without any changes and interpretations.""")
 
-    def generate_response(prompt: str) -> str:
-        """
-        Generate a response from the OpenAI API based on the provided prompt.
-        Args:
-            prompt: the prompt to generate a response from
-        Returns:
-            response_text: the generated response text
-        """
-        try:
-            if debug_mode: print(f"*** Prompt: *** len: {len(prompt).__str__()} \n {prompt} \n")
-            api_key = os.environ["OPENAI_API_KEY"]
-            # Define the headers for the HTTP request
-            headers = {
-                'Authorization': f'Bearer {api_key}',
-                'Content-Type': 'application/json'
-            }
-            # Define the data payload for the API request
-            data = {
-                "model": "gpt-3.5-turbo-instruct",
-                "prompt": prompt,
-                "max_tokens": 1000,
-                "temperature": 0
-            }
-            # Make the POST request to the OpenAI API
-            response = requests.post('https://api.openai.com/v1/completions', headers=headers, json=data)
-            # Extract the response text
-            response_data = response.json()
-            if response_data['choices']:
-                response_text = response_data['choices'][0]['text'].strip()
-            else:
-                raise ValueError("No LLM response received in data")
-
-            # response_text = response_text.strip()
-            if debug_mode:
-                print(f"*** LLM Response: ***\n {response_text}")
-                print("*" * 50)
-
-            return response_text
-
-        except requests.exceptions.Timeout:
-            raise TimeoutError("Request timed out while calling the OpenAI API")
-        except Exception as e:
-            raise RuntimeError(f"An unexpected error occurred: {e}")
-
     result = ""
-    generate_response(inital_prompt + doc.text)
+    generate_response_GPT3_instruct_model(inital_prompt + doc.text)
     if debug_mode: print(f"Text contains listings: {text_contains_listings}")
     if text_contains_listings:  #
-        new_text = generate_response(prompt_enumeration_resolution + outro + doc.text + answer_outro)
+        new_text = generate_response_GPT3_instruct_model(
+            prompt_enumeration_resolution + outro + doc.text + answer_outro)
         nlp = spacy.load('en_core_web_trf')
         doc = nlp(new_text)  # replace doc with old text with doc with new text, where listings are resolved
 
@@ -205,14 +163,14 @@ def LLM_assisted_refinement(text_input: str, nlp, title: str):
             if current_sent.isspace() or current_sent.__len__() == 0:
                 if debug_mode: print(f"Sent No. {number} has been returned as empty message.")
                 next(doc.sents)
-                break  # TODO: check if this is correct
-            # intro
+                break
             query = prompt + outro + current_sent + answer_outro
-            current_sent = generate_response(query)
+            current_sent = generate_response_GPT3_instruct_model(query)
         result = result + " " + current_sent + "\n"
     result = result.strip()
     if debug_mode: print("**** Full description: **** \n" + result.replace("\n", " "))
-    write_to_file(result, f"/Users/vincentderekheld/PycharmProjects/text2BPMN-vincent/evaluation/LLM_ATR_results/{title}.txt") #TODO: change path, if DEBUG:
+    write_to_file(result,
+                  f"/Users/vincentderekheld/PycharmProjects/text2BPMN-vincent/evaluation/LLM_ATR_results/{title}.txt")  # TODO: change path, if DEBUG:
     return result
 
 
