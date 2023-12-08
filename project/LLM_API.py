@@ -6,6 +6,17 @@ from openai import OpenAI
 import requests
 
 
+def filter_quotation_marks(text: str) -> str:
+    """
+    Filter quotation marks from the provided text.
+    Args:
+        text: the text to filter quotation marks from
+    Returns:
+        The filtered text
+    """
+    return text.replace('\"', "").replace("\'", "")
+
+
 def generate_response_GPT3_instruct_model(prompt: str) -> str:
     """
     Generate a response from the GPT3.5-instruct model based on the provided prompt.
@@ -36,6 +47,7 @@ def generate_response_GPT3_instruct_model(prompt: str) -> str:
         response_data = response.json()
         if response_data['choices']:
             response_text = response_data['choices'][0]['text'].strip()
+            response_text = filter_quotation_marks(response_text)
         else:
             raise ValueError("No LLM response received in data")
 
@@ -79,6 +91,7 @@ def generate_response_GPT4_model(prompt: str) -> str:
         ]
     )
     response_text = response.choices[0].message.content
+    response_text = filter_quotation_marks(response_text)
     response_text = response_text.strip()
     return response_text
 

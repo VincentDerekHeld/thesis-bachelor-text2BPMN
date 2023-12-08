@@ -130,7 +130,7 @@ def extract_elements(sentence, process):
     if process.action is not None:
         process.action.active = sentence_is_active #Active bool is stored in the action
         for conjunct in process.action.token.conjuncts:
-            print(f"Conjunct: {conjunct}") #TODO: 2023-12-06: conjuctions
+            #print(f"Conjunct: {conjunct}") #TODO: 2023-12-06: conjuctions
             if conjunct == process.action.token:
                 continue
             if sentence.start < conjunct.i < sentence.end:

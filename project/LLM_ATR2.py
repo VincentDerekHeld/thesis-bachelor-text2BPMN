@@ -1,201 +1,184 @@
-import logging
 import os
-
 import requests
-from openai import OpenAI
+import spacy
+from spacy.tokens import Doc
 
-from project.LLM_API import generate_response_GPT3_instruct_model, generate_response_GPT4_model
+from project.Constant import DEBUG, resolve_enumeration, filter_irrelevant_information, transform_implicit_actions
+from project.LLM_API import generate_response_GPT3_instruct_model
+from project.Utilities import write_to_file, open_file, text_pre_processing
 
 
-def improve_syntax_tasks2(syntax: str, text_description: str) -> str:
-    debug_mode = True
-    prompt = (f"""
-    Solve the tasks step by step.
-    Tasks:
-    1. Improve the texts of the tasks in the following process diagram based on the given text description. Tasks are denoted with []. E.g. [task1] as activity_1. 
-    2. Ensure each task is described with a maxium of 6 words and verbs are used in the base form
-    3. Return only the improved process diagram syntax as a simple string. No additional text is needed.
-   
-    Diagram Syntax to be Improved:
-    {syntax}
+def contains_listings(doc: Doc) -> bool:
+    text_contains_listings = False
+    if resolve_enumeration:
+        for token in doc:
+            if token.tag_ == "LS":
+                print(f"Found listing: {token.text}")
+                text_contains_listings = True
+                break
+    return text_contains_listings
 
-    ### Full Process Description: ###
-    {text_description}
 
-    Note: Return only the improved process diagram syntax as a simple string. No additional text is needed.
+def LLM_assisted_refinement(text_input: str, nlp, title: str):
+    """
+    LLM-assisted refinement of the input text. The text refinement is based on the LLM model and includes the following steps:
+    1) Resolve enumerations
+    2) Filter irrelevant information
+    3) Transform implicit actions into explicit actions
+
+    Args:
+        text_input: the input text to be refined
+        nlp: the large spacy model
+        title: the title of the text output diagram
+    Returns:
+        result: the LLM-assisted refined text
+    """
+    print("Start LLM-assisted refinement --- this can take some time...")
+    os.environ["TOKENIZERS_PARALLELISM"] = "false"
+    debug_mode = True  # TODO: change to DEBUG
+    text_input = text_pre_processing(text_input)
+    doc = nlp(text_input)  # Create doc object from input text for identification of listings and for sentence splitting
+    outro = """\n ### TEXT ### \n"""
+    answer_outro = "\n ### Answer / Response: ###"
+
+    prompts = []
+    inital_prompt = ("""
+    ### Instruction: ###
+    Read the text carefully and try to understand the content. 
+    Return on this message an empty message (just a spaces without any other characters).
+    ### Full Text ### \n""")
+
+    prompt_enumeration_resolution = ("""
+    ### Example: ###
+    # Example Input: # 
+    
+    The actor shall determine:
+    a) what needs to be done..
+    b) the methods
+    c) feedback on:
+        1) the results
+        2) monitoring
+
+    # Example Output: # 
+    The actor shall determine what needs to be done...
+    The actor shall determine the methods...
+    The actor shall determine feedback on the results, monitoring, 
+
+    ### Instruction: ####
+    Keep as many words from the original text as possible, and never add information (from the example) to the output. 
+    Return the listings carefully transformed into a continuous text based on the example and filter the bullet points.
+
     """)
 
-    print(f"prompt: {prompt}")
-    result = generate_response_GPT3_instruct_model(prompt)
-    print("**** Full description: **** \n" + result)
-    return result.strip()
+    # Relevance of Sentence
+    filter_outro = """
+    ### Instruction: ###
+    1) Decide carefully based on the provided background if a part of the following sentence fulfills the conditions of the provided background information. If the condition is fulfilled, go to 2), else go to 3).
+    2) Filter carefully the information, that fulfills the condition, from the text (but sill return full sentences) or if the sentence consists only out of this irrelevant information return an empty message (just a spaces without any other characters).
+    3) Return the text carefully without any changes or interpretations.
+    """
+
+    if filter_irrelevant_information: prompts.append(""" 
+    ### Background Information: ###
+    Introduction sentence that describe the company are not relevant and must be filtered.
+        Example: The Sentence "A small company manufactures customized bicycles." must be filtered.
+        Example: The Sentence "The Evanstonian is an upscale independent hotel." must be filtered.
+    """ + filter_outro)
+
+    if filter_irrelevant_information: prompts.append(""" 
+    ### Background Information: ###
+    Some parts of sentences just name the start of a process (instance) and are not relevant and must be filtered.
+    Example: "Whenever the sales department receives an order, a new process instance is created." 
+    -> "a new process instance is created." must be filtered. ->  "The sales department receives an order." must be returned.
 
 
-def improve_quality_of_task_labels(syntax: str) -> str:
-    list_of_irrelevant = ["the first activity ", "the second activity ", ": "]
-    for irrelevant in list_of_irrelevant:
-        syntax = syntax.replace(irrelevant, "")
-    return syntax
+    """ + filter_outro)
 
+    if filter_irrelevant_information: prompts.append(""" 
+    ### Background Information: ###
+    Information that describes the outcome or the goal of the process or an activity are not relevant and must be filtered.
+                Example: "to ensure valid results." this part must be filtered.
+                Example: "to ensure that the audit programme(s) are implemented and maintained." this part must be filtered.
+                Example: "as evidence of the results." this part must be filtered. 
+                Example: "that are relevant to the information security management system" this part must be filtered.
+                Example: "to ensure that the audit programme(s) are implemented and maintained." this part must be filtered.
+    """ + filter_outro)
 
-def improve_syntax_tasks(syntax: str, text_description: str) -> str:
-    ### This worked pretty good
-    debug_mode = True
-    prompt = (f"""
-    
-    Tasks:
-    1. Improve the texts of the tasks in the following process diagram based on the given text description. Tasks are denoted with []. E.g. [task1] as activity_1.
-    2. Return only the improved process diagram syntax as a simple string. No additional text is needed.
-    
-    Diagram Syntax to be Improved:
-    {syntax}
+    # TODO: maybe those parts can be combined
+    if filter_irrelevant_information: prompts.append(""" 
+    ### Background Information: ###
+    Information that describes the decision criteria for methods or techniques are not relevant and must be filtered.
+                Example: "The methods selected should produce comparable and reproducible results to be considered valid;" must be filtered.
+                    -> The sentence consists only out of this irrelevant information and an empty message must be returned.
+                Example: "Eighty percent of room-service orders include wine or some other alcoholic beverage." must be filtered.
+    """ + filter_outro)
 
-    ### Full Process Description: ###
-    {text_description}
+    if filter_irrelevant_information: prompts.append(""" 
+    ### Background Information: ###
+    Information that clarifies that something is not universally applicable are not relevant and must be filtered.
+                Examples: "as applicable", "if applicable", "where applicable", "where feasible" must be filtered.
+       """ + filter_outro)
 
-    Note: Return only the improved process diagram syntax as a simple string. No additional text is needed.
-    """)
+    if filter_irrelevant_information: prompts.append(""" 
+    ### Background Information: ###
+    Sentence parts that contain examples are not relevant and must be carefully filtered from the sentence.
+                Example of key words:  parts containing "for example ...", "e.g. ..." must be filtered.
+    """ + filter_outro)
 
-    print(f"prompt: {prompt}")
-    result = generate_response_GPT3_instruct_model(prompt)
-    print("**** Full description: **** \n" + result)
-    return result.strip()
+    if filter_irrelevant_information: prompts.append(""" 
+    ### Background Information: ###
+        References to other Articles or Paragraphs are not relevant and must be filtered.
+                Example: "referred to in Article 22(1) and (4)" must be filtered.
+                Example: "in accordance with Article 55" must be filtered.
+    """ + filter_outro)
 
+    # Transform implicit actions into explicit actions
+    if transform_implicit_actions: prompts.append("""
+    Extract implicit ACTIONS from the text and transform the Actions into explicit Actions.
+                ## Examples: ##
+                    #Example 1: The Sentence „Documented information shall be available as evidence of the implementation of the audit programme(s) and the audit results.“ must be transformed into „They shall document the information“ because it implies the ACTION „document the results“.
+                    #Example 2: The Sentence "The Room Service Manager then submits an order ticket to the kitchen to begin preparing the food." must be transformed into „The Room Service Manager submits an order ticket to the kitchen. The kitchen prepares the food.“ and here it is importent to keep the order of the sentences and to explicitly name the ACTOR and the ACTION.
+                 ### Instruction: ####
+        Solve the tasks carefully step by step. Do not comment on any of the steps. Return the (transformed) sentence without interpretations.
+        1) Analyze the following sentence to determine if a part contains any implicit actions. If it contains implicit actions go to 2), else go to 3). Do not comment on this step.
+        2) If implicit action(s) are identified, these must be carefully transformed into explicit actions following the following conditions.
+            1. Condition: The original structure and order of the sentence must be retained.
+            2. Condition: The original wording of the sentence must be retained.
+        3) Do not comment on this step and return carefully the full input sentence without any changes and interpretations.""")
 
-def improve_syntax(syntax: str, text_description: str) -> str:
-    debug_mode = True
-    prompt = (f"""
-    Tasks: 
-    1. Improve the syntax of the following process diagram based on the given text description and ensure that all elements are accurately described. 
-    2. Carefully check if the syntax is correct and according the provided rules.
-    3. Return only the improved process diagram syntax as a simple string. No additional text is needed.
-
-    Rules:
-    1. The first line must contain the word 'title'. Do not change the title.
-    2. Start events are denoted by (start) E.g. (start) as start1
-    3. End events  are denoted by (end). E.g. (end) as end1
-    4. Tasks are denoted  with []. E.g. [task1] as activity_1
-    5. Exclusive gateways are indicated with <>, and conditions within the <>. E.g. <> as gateway_1
-    6. Parallel gateways are denoted by <@parallel>. E.g. <@parallel> as gateway_2
-    7. Each branching gateway should be followed by a corresponding closing gateway.
-    8. Assign a unique ID to all elements, including events, tasks, and gateways. E.g., activity_1, activity_2, gateway_1, gateway_2, etc.
-    9. Elements are grouped into lanes based on the actor executing them.
-    10. Each lane name must be unique and appear only once, except for unnamed single lanes. Each lane must contain at least one element.
-    11. Connect events in lanes using '->'.
-    12. For conditional gateways, annotate conditions like gateway_4-"condition"->activity_6->gateway_4_end.
-
-    ### Example Input: ###
-    A customer brings in a defective computer, and the CRS checks the defect and provides a repair cost calculation. If the costs are acceptable, the process continues; otherwise, the computer is returned unrepaired. The repair involves two activities executed in any order: hardware check and repair, and software check and configuration. Each activity is followed by a system functionality test. If an error is detected, another repair activity is executed; otherwise, the repair is finished.
-
-    ### Example Output: ###
-     Example Output:
-    lane: customer
-        (start) as start
-        [brings a defective computer] as activity_9
-        [takes her computer] as activity_4
-        <> as gateway_1_end
-        [execute two activities] as activity_12
-        [the first activity check the hardware] as activity_13
-        [the first activity repair the hardware] as activity_14
-        [the second activity checks the software] as activity_15
-        [the second activity configure the software] as activity_16
-        [test the proper system functionality] as activity_17
-        <detect an error?> as gateway_5
-        [execute another arbitrary repair activity] as activity_7
-        [finish the repair] as activity_8
-        <> as gateway_5_end
-        (end) as end
-    lane: crs
-        [checks the defect] as activity_10
-        [hand out a repair cost calculation] as activity_11
-        <the costs are acceptable?> as gateway_1
-        [the process continues] as activity_3
-    
-    start->activity_9->activity_10->activity_11->gateway_1
-    gateway_1-"yes"->activity_3->gateway_1_end
-    gateway_1-"no"->activity_4->gateway_1_end
-    gateway_1_end->activity_12->activity_13->activity_14->activity_15->activity_16->activity_17->gateway_5
-    gateway_5-"yes"->activity_7->gateway_5_end
-    gateway_5-"no"->activity_8->gateway_5_end
-    gateway_5_end->end
-
-    Diagram Syntax to be Improved:
-    {syntax}
-
-    ### Full Process Description: ###
-    {text_description}
-
-    Note: Return only the improved process diagram syntax as a simple string. No additional text is needed.
-    """)
-
-    print(f"prompt: {prompt}")
-    result = generate_response_GPT3_instruct_model(prompt)
-    print("**** Full description: **** \n" + result)
-    return result
-
-
-def improve_syntax_old(syntax: str, text_description: str) -> str:
-    debug_mode = True
-    prompt = (f"""
-    Based on the following text description and the provided rules, please carefully improve the syntax of the following process diagram.
-    Carefully ensure, that all elements are precisely described and that the syntax is correct.
-    Here are some rules:
-    1. The first line must contain the word 'title'
-    2. the start event is always displayed with (start), and end events are always displayed with (end).
-    3. tasks are indicated with a [],
-    4. Exclusive gateways are indicated with <>, where the conditions can be specified within the <>
-    5. The Parallel gateways are specified with <@parallel>.
-    6. Every gateway that begins a branch should be followed by the same gateway that ends the branch.
-    7. An unique ID will follow all these elements.
-    8. Based on the actor who carried out the corresponding elements, the elements will be added to corresponding lanes.
-    9. Each lane with the same name can only appear once. If there is only one lane, it can have no name.
-    10. After all events are registered in the lanes, they will be then connected using "->".
-    11. For conditional gateways, if there should be some conditional specifications, it can be annotated like gateway_4-"the part is available in house"->activity_6->gateway_4_end.
-    
-
-    ### Example Input: ###
-    A customer brings in a defective computer and the CRS checks the defect and hands out a repair cost calculation back. If the customer decides that the costs are acceptable, the process continues, otherwise she takes her computer home unrepaired. The ongoing repair consists of two activities, which are executed, in an arbitrary order. The first activity is to check and repair the hardware, whereas the second activity checks and configures the software. After each of these activities, the proper system functionality is tested. If an error is detected another arbitrary repair activity is executed, otherwise the repair is finished.
-    
-    Example Output:
-    lane: customer
-        (start) as start
-        [brings a defective computer] as activity_9
-        [takes her computer] as activity_4
-        <> as gateway_1_end
-        [execute two activities] as activity_12
-        [the first activity check the hardware] as activity_13
-        [the first activity repair the hardware] as activity_14
-        [the second activity checks the software] as activity_15
-        [the second activity configure the software] as activity_16
-        [test the proper system functionality] as activity_17
-        <detect an error?> as gateway_5
-        [execute another arbitrary repair activity] as activity_7
-        [finish the repair] as activity_8
-        <> as gateway_5_end
-        (end) as end
-    lane: crs
-        [checks the defect] as activity_10
-        [hand out a repair cost calculation] as activity_11
-        <the costs are acceptable?> as gateway_1
-        [the process continues] as activity_3
-    
-    start->activity_9->activity_10->activity_11->gateway_1
-    gateway_1-"yes"->activity_3->gateway_1_end
-    gateway_1-"no"->activity_4->gateway_1_end
-    gateway_1_end->activity_12->activity_13->activity_14->activity_15->activity_16->activity_17->gateway_5
-    gateway_5-"yes"->activity_7->gateway_5_end
-    gateway_5-"no"->activity_8->gateway_5_end
-    gateway_5_end->end
-    
-    Make sure to return only the syntax of the process diagram as a simple string, without any additional text .
-    ### Activity: ###
-    {text_description}
-
-    ### Full Process Description: ###
-    {syntax}
-    """)
-    print(f"prompt: {prompt}")
     result = ""
-    result = generate_response_GPT4_model(prompt)
-    print("**** Full description: **** \n" + result)
+    generate_response_GPT3_instruct_model(inital_prompt + doc.text)
+    if debug_mode: print(f"Text contains listings: {contains_listings(doc)}")
+    if contains_listings(doc):  #
+        new_text = generate_response_GPT3_instruct_model(
+            prompt_enumeration_resolution + outro + doc.text + answer_outro)
+        nlp = spacy.load('en_core_web_trf')
+        doc = nlp(new_text)  # replace doc with old text with doc with new text, where listings are resolved
+
+    for number, sent in enumerate(doc.sents):
+        current_sent: str = sent.text
+        for prompt in prompts:
+            if current_sent.isspace() or current_sent.__len__() == 0:
+                if debug_mode: print(f"Sent No. {number} has been returned as empty message.")
+                next(doc.sents)
+                break
+            query = prompt + outro + current_sent + answer_outro
+            current_sent = generate_response_GPT3_instruct_model(query)
+        result = result + " " + current_sent + "\n"
+    result = result.strip()
+    if debug_mode: print("**** Full description: **** \n" + result.replace("\n", " "))
+    # write_to_file(result,
+    #             f"/Users/vincentderekheld/PycharmProjects/text2BPMN-vincent/evaluation/LLM_ATR_results/{title}.txt")  # TODO: change path, if DEBUG:
     return result
+
+
+if __name__ == '__main__':
+    """
+    This method is used to run the LLM-assisted refinement without creating diagrams.
+    """
+    for i in range(1, 23):
+        input_path = f"/text2BPMN-vincent/evaluation/golden_standard/Text{i}.txt"
+        text_input = open_file(input_path)
+        title = f"Text{i}_LLM_preprocessed_text"
+        nlp = spacy.load('en_core_web_trf')
+        LLM_assisted_refinement(text_input, nlp, title)

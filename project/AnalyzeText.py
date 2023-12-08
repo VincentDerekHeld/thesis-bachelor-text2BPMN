@@ -204,7 +204,7 @@ def describe_process_start(process: Process):
     return False
 
 
-def determine_end_activities(structure_list: [Structure]):
+def determine_end_activities(structure_list: [Structure], text_input: str):
     """
     determine whether an activity is an end activity. there are two cases:
     1. the last activity in the list is an end activity
@@ -218,10 +218,20 @@ def determine_end_activities(structure_list: [Structure]):
     for structure in structure_list:
         if structure_list.index(structure) == len(structure_list) - 1:
             structure.is_end_activity = True
+            # if Constant.filter_finish_activities:
+            #   determine_finish_activity(structure)
             # print(f"structure.is_end_activity: {structure.is_end_activity} Case 1: {structure}")
+        if isinstance(structure, Activity):
+            if Constant.filter_finish_activities:
+                determine_finish_activity(structure)
+                if structure.is_finish_activity:
+                    previous_structure = structure_list[structure_list.index(structure) - 1]
+                    previous_structure.is_end_activity = True
         elif isinstance(structure, ConditionBlock):
             for branch in structure.branches:
                 for activity in branch["actions"]:
+                    if Constant.filter_finish_activities:
+                        determine_finish_activity(activity)
                     if activity.process.action.active:
                         actor = activity.process.actor
                     else:
@@ -236,7 +246,39 @@ def determine_end_activities(structure_list: [Structure]):
                                 hypernyms_checker(activity.process.action.object.token, ["message"]) and \
                                 verb_hypernyms_checker(activity.process.action.token, ["refuse"]):
                             activity.is_end_activity = True
-                            # print(f"activity.is_end_activity: {activity.is_end_activity} Case 3: {activity}")
+                            #continue
+                        elif Constant.filter_finish_activities and decide_if_end_of_process(
+                                str(activity.process.action), text_input):
+                            print(f"101: activity.process.action.token: {activity.process.action.token}")
+                            print(f"101: activity.process.action.str: {str(activity.process.action)}")
+                            activity.is_end_activity = True
+        #elif isinstance(structure, Activity):
+         #   if Constant.filter_finish_activities:
+          #      determine_finish_activity(structure)
+
+        # if Constant.filter_finish_activities:
+        #   remove_redundant_end_activities(structure_list)
+
+
+def remove_redundant_end_activities(structure_list: [Structure]):
+    for structure in structure_list:
+        if isinstance(structure, ConditionBlock):
+            for branch in structure.branches:
+                for activity in branch["actions"]:
+                    if activity.is_finish_activity:
+                        branch["actions"].remove(activity)
+                        print(f"structure_list.remove(structure): {structure}")
+        elif isinstance(structure, Activity):
+            if structure.is_finish_activity:
+                structure_list.remove(structure)
+                print(f"structure_list.remove(structure): {structure}")
+
+
+def determine_finish_activity(activity: Activity):
+    if Constant.filter_finish_activities:
+        if "finish the process" in str(activity.process.action):
+            activity.is_finish_activity = True
+            print(f"activity.is_finish_activity: {activity.is_finish_activity} Activity: {activity}")
 
 
 def determine_end_activities_backup(structure_list: [Structure]):

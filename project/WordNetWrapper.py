@@ -22,7 +22,7 @@ def can_be_person_or_system(full_noun: str, main_noun) -> bool:
     elif can_be(synsets[0], []):
         return True
     elif LLM_real_actor:
-        if decide_if_real_actor(full_noun.lower()):  # TODO: DONE use LLM to decide if real actor
+        if decide_if_real_actor(full_noun.lower()):
             return True
     else:
         return False

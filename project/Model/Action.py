@@ -59,7 +59,7 @@ class Action(ExtractedObject):
             if self.aux:
                 print(f"Action: Aux: {self.aux.text}") #TODO: me modal verbs
                 #TODO: implement LLM function, that checks if the aux is a modal verb
-                if self.aux in MODAL_VERBS:
+                if self.aux.text.lower() in MODAL_VERBS:
                     str_utility(self.aux, result)
 
         if self.active:

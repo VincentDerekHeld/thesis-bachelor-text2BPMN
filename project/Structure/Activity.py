@@ -1,5 +1,7 @@
 from Structure.Structure import Structure
 
+from project.Constant import filter_finish_activities
+
 
 class Activity(Structure):
 

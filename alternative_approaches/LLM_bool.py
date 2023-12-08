@@ -7,7 +7,7 @@ from project.Structure.Structure import Structure
 def decide_if_end_of_process(activity: str, text_input: str) -> bool:
     debug_mode = True
     prompt = (f"""
-    Determine if the following activity represents the end of a process as described in the full text. 
+    Determine based on the if the following activity represents the end of a process as described in the full text. 
     Respond with "True" if it is the end of the process, or "False" if it is not. 
     Use the example as a guide: In the process of repairing a car, if the activity is "customer take car," then this activity signifies the end of the process.
 
@@ -17,11 +17,12 @@ def decide_if_end_of_process(activity: str, text_input: str) -> bool:
     ### Full Text: ###
     {text_input}
     """)
-    print(f"prompt: {prompt}")
+
     result = ""
     result = generate_response_GPT4_model(prompt)
     result = result.strip()
-    if debug_mode: print("**** Full description: **** \n" + result.replace("\n", " "))
+    print(f"prompt: Activity is End: {result}: {activity}")
+    # if debug_mode: print("**** Full description: **** \n" + result.replace("\n", " "))
     result = normalize_boolean_result(result)
     return result
 

@@ -5,8 +5,10 @@ from processpiper.text2diagram import render
 from Structure.Activity import Activity
 from Structure.Block import ConditionBlock, AndBlock, ConditionType
 from Structure.Structure import Structure
-from project.Constant import LLM_syntax_improval, resolve_first_lane_problem, resolve_syntax_problems
-from project.LLM_ATR2 import improve_syntax, improve_syntax_tasks, improve_syntax_tasks2, improve_quality_of_task_labels
+from project.Constant import LLM_syntax_improval, resolve_first_lane_problem, resolve_syntax_problems, \
+    filter_finish_activities
+from project.LLM_Task_Labels import improve_syntax, improve_syntax_tasks, improve_syntax_tasks2, \
+    improve_quality_of_task_labels
 
 
 def create_bpmn_model(structure_list: [Structure], actor_list: list, title: str, save_path: str, text_description: str,
@@ -26,7 +28,7 @@ def create_bpmn_model(structure_list: [Structure], actor_list: list, title: str,
     if LLM_syntax_improval:
         try:
             render_bpmn_model(improve_syntax_tasks2(input_syntax_rule_based, text_description), save_path)
-        except NotImplementedError as e:
+        except Exception as e:
             print(f"Error in create_bpmn_model: {e}")
             render_bpmn_model(input_syntax_rule_based, save_path)
     else:
@@ -41,7 +43,6 @@ def render_bpmn_model(input_syntax: str, path: str):
         path: the path to save the BPMN model
 
     """
-    # TODO: Filter "as" in the input syntax to ensure: "invalid syntax" is not triggered
     render(input_syntax, path)
 
 
@@ -69,10 +70,6 @@ def create_bpmn_description(structure_list: [Structure], actor_list: list, title
     lanes = {}
     connections = []
     print(f"Actor List: {actor_list}")  # TODO: me
-    # if len(actor_list) < 2: #TODO  this is wrong
-    #   lanes["dummy"] = []
-    # if actor = None -> dummy else actor
-    # else:
     if resolve_first_lane_problem:
         for actor in actor_list:
             lanes[actor] = []
@@ -96,8 +93,15 @@ def create_bpmn_description(structure_list: [Structure], actor_list: list, title
             connections.append("start")
 
         if isinstance(structure, Activity):
-            key = belongs_to_lane(structure_list, lanes, structure, key)
-            append_to_lane(key, lanes, connection_id, connections, structure, last_gateway)
+            if filter_finish_activities:
+                if structure.is_finish_activity:
+                    continue
+                else:
+                    key = belongs_to_lane(structure_list, lanes, structure, key)
+                    append_to_lane(key, lanes, connection_id, connections, structure, last_gateway)
+            else:
+                key = belongs_to_lane(structure_list, lanes, structure, key)
+                append_to_lane(key, lanes, connection_id, connections, structure, last_gateway)
         elif isinstance(structure, ConditionBlock):
             end_gateway = "gateway_" + str(structure.id) + "_end"
 
@@ -128,15 +132,32 @@ def create_bpmn_description(structure_list: [Structure], actor_list: list, title
                 need_end_gateway = True
                 for activity in branch["actions"]:
                     print(f"Case 103: Activity: {activity}, activity.is_end_activity: {activity.is_end_activity}")
-                    key = belongs_to_lane(structure_list, lanes, activity, key)
-                    append_to_lane(key, lanes, connection_id, connections, activity, last_gateway)
-                    if activity.is_end_activity:
-                        need_end_gateway = False
-                        end_id = "end_" + str(activity.id)
-                        early_end_gateway = "(end) as end_" + str(activity.id)
-                        lanes[key].append(early_end_gateway)
-                        connections[connection_id] += "->" + end_id
-                        continue
+                    if filter_finish_activities:
+                        previous_activity = structure_list[structure_list.index(structure) - 1]
+                        print(
+                            f"Activity: {activity}, activity.is_end_activity: {activity.is_end_activity}, activity.is_finish_activity: {activity.is_finish_activity}, previous_activity: {previous_activity}, previous_activity.is_end_activity: {previous_activity.is_end_activity}, is_finish_activity: {previous_activity.is_finish_activity}")
+                        if activity.is_end_activity and activity.is_finish_activity:
+                            break
+                        else:
+                            key = belongs_to_lane(structure_list, lanes, activity, key)
+                            append_to_lane(key, lanes, connection_id, connections, activity, last_gateway)
+                            if activity.is_end_activity:
+                                need_end_gateway = False
+                                end_id = "end_" + str(activity.id)
+                                early_end_gateway = "(end) as end_" + str(activity.id)
+                                lanes[key].append(early_end_gateway)
+                                connections[connection_id] += "->" + end_id
+                                continue
+                    else:
+                        key = belongs_to_lane(structure_list, lanes, activity, key)
+                        append_to_lane(key, lanes, connection_id, connections, activity, last_gateway)
+                        if activity.is_end_activity:
+                            need_end_gateway = False
+                            end_id = "end_" + str(activity.id)
+                            early_end_gateway = "(end) as end_" + str(activity.id)
+                            lanes[key].append(early_end_gateway)
+                            connections[connection_id] += "->" + end_id
+                            continue
 
                 if need_end_gateway:
                     connections[connection_id] += "->" + end_gateway
@@ -190,7 +211,7 @@ def create_bpmn_description(structure_list: [Structure], actor_list: list, title
 
 def create_activity_label(action, id, actor=None) -> str:
     """
-    Create the activity label for the BPMN model. 
+    Create the activity label for the BPMN model.
     Args:
         action: the action of the structure to be appended
         id: the id of the structure
@@ -298,21 +319,20 @@ def append_to_lane(key: str, lanes: {}, connection_id: int, connections: list, s
 
 def belongs_to_lane(activity_list: [Structure], lanes: {}, structure: Structure,
                     previous_actor: Optional[str]) -> str:
-    if resolve_first_lane_problem:
-        """
+    """
         This method is used to determine which lane the activity belongs to.
         Args:
             activity_list: the list of activities
             lanes: the dictionary of lanes
             structure: the current structure that is being processed
             previous_actor: the actor of the previous activity
-    
+
         Returns:
             the name of the lane, if the lane has length 1, then it returns "dummy"
         """
-        if len(lanes) == 1 and next(iter(lanes)) == "dummy":  # TODo: maybe delte this to lines
+    if resolve_first_lane_problem:
+        if len(lanes) == 1 and next(iter(lanes)) == "dummy":
             return "dummy"
-
         if previous_actor is None:
             for activity in activity_list:
                 if isinstance(activity, Activity):
@@ -335,9 +355,8 @@ def belongs_to_lane(activity_list: [Structure], lanes: {}, structure: Structure,
                 else:
                     return previous_actor
     else:
-        if len(lanes) == 1:  # TODo: maybe delte this to lines
+        if len(lanes) == 1:
             return "dummy"
-
         if previous_actor is None:
             for activity in activity_list:
                 if isinstance(activity, Activity):
@@ -349,8 +368,6 @@ def belongs_to_lane(activity_list: [Structure], lanes: {}, structure: Structure,
                             else:
                                 if activity.process.actor.full_name == key:
                                     return activity.process.actor.full_name
-                    # else:
-                    #   return "dummy"
         else:
             if structure.process.actor is None:
                 return previous_actor

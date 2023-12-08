@@ -43,5 +43,5 @@ def start_task(nlp, nlp_similarity, input_path, title, output_path):
     valid_actors = get_valid_actors(containerList, nlp_similarity)
     valid_actors = adjust_actor_list(valid_actors)
     flows = build_flows(containerList)
-    determine_end_activities(flows)
+    determine_end_activities(flows, text_input)
     create_bpmn_model(flows, valid_actors, title, output_path, text_input)

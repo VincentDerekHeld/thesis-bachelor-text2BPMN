@@ -1,5 +1,7 @@
 from typing import Optional
 
+from project.Constant import filter_finish_activities
+
 
 class Structure:
     ID_COUNTER = 0
@@ -8,6 +10,8 @@ class Structure:
         Structure.ID_COUNTER += 1
         self.id = Structure.ID_COUNTER
         self.is_end_activity = False
+        if filter_finish_activities:
+            self.is_finish_activity = False
 
         self.previous: Optional[Structure] = None
         self.next: Optional[Structure] = None
