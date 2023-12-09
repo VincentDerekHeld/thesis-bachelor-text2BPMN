@@ -31,11 +31,11 @@ if __name__ == '__main__':
     Edit the following code to generate the models for the texts you want to generate:
     Have a look into Constants.py to activate different functionalities or run the project with the recommended modes
     """
-    for i in range(2, 3):  # (m, n) -> m is inclusive, n is exclusive, for all (1, 24), for a single one (i, i+1)
+    for i in range(1, 24):  # (m, n) -> m is inclusive, n is exclusive, for all (1, 24), for a single one (i, i+1)
         input_path = f"/Users/vincentderekheld/PycharmProjects/text2BPMN-vincent/evaluation/LLM_ATR_results/text{i}_our_approach.txt"
         #input_path = f"/Users/vincentderekheld/PycharmProjects/text2BPMN-vincent/evaluation/gold_standard/Text{i}.txt"
         title = f"text{i}_our_approach"  # Title has to be without spaces, use underscore instead
-        output_path = f"/Users/vincentderekheld/PycharmProjects/text2BPMN-vincent/evaluation/our_approach13/{title}.png"
+        output_path = f"/Users/vincentderekheld/PycharmProjects/text2BPMN-vincent/evaluation/our_approach22/{title}.png"
         print(f"Start generating model for {title}")
         #try:
         BPMNStarter.start_task(nlp, nlp_similarity, input_path, title, output_path)

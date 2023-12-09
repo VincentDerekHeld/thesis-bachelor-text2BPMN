@@ -2,43 +2,36 @@ from processpiper.text2diagram import render
 
 if __name__ == '__main__':
     input_syntax = """
-title: text1_our_approach
+title: text2_our_approach
 width: 10000
 colourtheme: BLUEMOUNTAIN
-lane: sales department
+lane: customer
 	(start) as start
-	[receive order] as activity_9
-	<> as gateway_1
-	[accept order for customized bike] as activity_2
-	[inform storehouse and engineering department] as activity_11
-	[reject order for customized bike] as activity_3
-	(end) as end_3
-	[finish process instance] as activity_10
-	(end) as end_10
+	[brings a defective computer] as activity_8
+	[takes her computer] as activity_4
+	(end) as end_4
 	<> as gateway_1_end
-	[ship bicycle] as activity_18
-	(end) as end
-	[finish process instance] as activity_19
-	(end) as end
-lane: storehouse
-	[process part list of order] as activity_12
-	[check required quantity of each part] as activity_13
-	[reserve part] as activity_14
-	[order part] as activity_15
-	[repeat procedure for each item on part list] as activity_16
-	<storehouse reserved every item of part list?> as gateway_4
-lane: engineering department
-	[prepare for assembling ordered bicycle] as activity_17
-	[assemble bicycle] as activity_8
-	<> as gateway_4_end
+	[execute two activities] as activity_11
+	[the first activity check the hardware] as activity_12
+	[the first activity repair the hardware] as activity_13
+	[the second activity checks the software] as activity_14
+	[the second activity configure the software] as activity_15
+	[test the proper system functionality] as activity_16
+	<detect an error?> as gateway_5
+	[execute another arbitrary repair activity] as activity_7
+	(end) as end_7
+lane: crs
+	[checks the defect] as activity_9
+	[hand out a repair cost calculation] as activity_10
+	<the costs are acceptable?> as gateway_1
+	[the process continues] as activity_3
 
-start->activity_9->gateway_1
-gateway_1->activity_2->activity_11->gateway_1_end
-gateway_1->activity_3->end_3->activity_10->end_10
-gateway_1_end->activity_12->activity_13->activity_14->activity_15->activity_16->activity_17->gateway_4
-gateway_4-yes->activity_8->gateway_4_end
-gateway_4-no->gateway_4_end
-gateway_4_end->activity_18->end->activity_19->end
+start->activity_8->activity_9->activity_10->gateway_1
+gateway_1-"yes"->activity_3
+gateway_1-"no"->activity_4->end_4
+gateway_1_end->activity_11->activity_12->activity_13->activity_14->activity_15->activity_16->gateway_5
+gateway_5-"yes"->activity_7->end_7
+gateway_5-"no"
  """
     render(input_syntax, "/Users/vincentderekheld/PycharmProjects/text2BPMN-vincent/evaluation/test.png")
 

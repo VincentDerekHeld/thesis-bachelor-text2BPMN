@@ -6,9 +6,8 @@ from Structure.Activity import Activity
 from Structure.Block import ConditionBlock, AndBlock, ConditionType
 from Structure.Structure import Structure
 from project.Constant import LLM_syntax_improval, resolve_first_lane_problem, resolve_syntax_problems, \
-    filter_finish_activities
-from project.LLM_Task_Labels import improve_syntax, improve_syntax_tasks, improve_syntax_tasks2, \
-    improve_quality_of_task_labels
+    filter_finish_activities, less_end_gateways, less_end_gateways2
+from project.LLM_Task_Labels import improve_syntax, improve_syntax_tasks, improve_taks_labeles_LLM
 
 
 def create_bpmn_model(structure_list: [Structure], actor_list: list, title: str, save_path: str, text_description: str,
@@ -27,12 +26,30 @@ def create_bpmn_model(structure_list: [Structure], actor_list: list, title: str,
     print(input_syntax_rule_based)
     if LLM_syntax_improval:
         try:
-            render_bpmn_model(improve_syntax_tasks2(input_syntax_rule_based, text_description), save_path)
+            llm_improved_syntax = improve_taks_labeles_LLM(input_syntax_rule_based, text_description)
+            llm_improved_syntax = improve_task_labels(llm_improved_syntax)
+            render_bpmn_model(llm_improved_syntax, save_path)
+
         except Exception as e:
             print(f"Error in create_bpmn_model: {e}")
+            input_syntax_rule_based = improve_task_labels(input_syntax_rule_based)
             render_bpmn_model(input_syntax_rule_based, save_path)
     else:
         render_bpmn_model(input_syntax_rule_based, save_path)
+
+
+def improve_task_labels(syntax: str) -> str:
+    """
+    Improve the quality of the task labels by removing unnecessary information.
+    Args:
+        syntax: syntax for the BPMN model that needs to be improved
+    Returns:
+        the improved syntax
+    """
+    list_of_irrelevant = ["the first activity ", "the second activity "]
+    for irrelevant in list_of_irrelevant:
+        syntax = syntax.replace(irrelevant, "")
+    return syntax
 
 
 def render_bpmn_model(input_syntax: str, path: str):
@@ -44,6 +61,16 @@ def render_bpmn_model(input_syntax: str, path: str):
 
     """
     render(input_syntax, path)
+
+
+def determine_if_end_gateways_are_needed(structure: Structure):
+    if less_end_gateways2:
+        if isinstance(structure, ConditionBlock):
+            for branch in structure.branches:
+                for action in branch["actions"]:
+                    if action.is_end_activity:
+                        structure.structure_needs_end_gateway = False
+                        break
 
 
 def create_bpmn_description(structure_list: [Structure], actor_list: list, title: str,
@@ -249,7 +276,8 @@ def append_to_lane(key: str, lanes: {}, connection_id: int, connections: list, s
                 if structure.process.actor.full_name in lanes.keys():
                     lanes[key].append(create_activity_label(structure.process.action, structure.id))
                 else:
-                    lanes[key].append(create_activity_label(structure.process.action, structure.id, structure.process.actor))
+                    lanes[key].append(
+                        create_activity_label(structure.process.action, structure.id, structure.process.actor))
             else:
                 lanes[key].append(
                     create_activity_label(structure.process.action, structure.id))

@@ -75,7 +75,8 @@ def LLM_assisted_refinement(text_input: str, nlp, title: str):
     # Relevance of Sentence
     filter_outro = """
     ### Instruction: ###
-    1) Decide carefully based on the provided background if a part of the following sentence fulfills the conditions of the provided background information. If the condition is fulfilled, go to 2), else go to 3). Do not filter the "in the meantime", "in the former case", "in the latter case".
+    Please never filter "in the meantime", "in the former case", "in the latter case" or conditions such as "if it is not available".
+    1) Decide carefully based on the provided background if a part of the following sentence fulfills the conditions of the provided background information. If the condition is fulfilled, go to 2), else go to 3).
     2) Filter carefully the information, that fulfills the condition, from the text (but sill return full sentences) or if the sentence consists only out of this irrelevant information return an empty message (just a spaces without any other characters). 
     3) Return the text carefully without any changes or interpretations.
     """

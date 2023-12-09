@@ -29,14 +29,17 @@ if __name__ == '__main__':
     print(remove_as_from_syntax(text))
 
 
-def improve_syntax_tasks2(syntax: str, text_description: str) -> str:
+def improve_taks_labeles_LLM(syntax: str, text_description: str) -> str:
     debug_mode = True
     prompt = (f"""
-    Solve the tasks step by step.
+    Please solve the tasks carefully step by step.
     Tasks:
-    1. Improve the texts of the tasks in the following process diagram based on the given text description. Tasks are denoted with []. E.g. [task1] as activity_1. 
-    2. Ensure each task is described with a maximum of 6 words and verbs are used in the base form
-    3. Return only the improved process diagram syntax as a simple string. No additional text is needed.
+    1. Please do not change the title of the process diagram (first line).
+    2. Please improve the texts of the tasks in the following process diagram carefully based on the given text description. Tasks are denoted with []. E.g. [task1] as activity_1. 
+    3. If two tasks are described with "the first activity" and are based on the same object they can be merged.
+    4. Please resolve imprecise descriptions such as "doing their tasks" carefully, based on the process description.
+    5. Ensure each task is described with a maximum of 6 words and verbs are used in the base form.
+    6. Please return carefully only the improved process diagram syntax as a simple string. No additional text is needed.
    
     Diagram Syntax to be Improved:
     {syntax}
@@ -52,14 +55,6 @@ def improve_syntax_tasks2(syntax: str, text_description: str) -> str:
     result = remove_as_from_syntax(result)
     print("**** Full description: **** \n" + result)
     return result.strip()
-
-
-def improve_quality_of_task_labels(syntax: str) -> str:
-    #TODO:
-    list_of_irrelevant = ["the first activity ", "the second activity ", ": "]
-    for irrelevant in list_of_irrelevant:
-        syntax = syntax.replace(irrelevant, "")
-    return syntax
 
 
 def improve_syntax_tasks(syntax: str, text_description: str) -> str:
