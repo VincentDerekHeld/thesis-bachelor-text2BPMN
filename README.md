@@ -51,6 +51,7 @@ BASE_PATH = "/Users/vincentderekheld/PycharmProjects/text2BPMN-vincent"
 1. Enter the input path to the textual description  (.txt), to use it as an input file or use the default
 2. Enter the output path, where the generated diagram should be stored (.png) or use the default
 3. Execute the "main" methode in the "main.py" file
+4. Outputs are stored in the result folder
 
 ## FAQs or Common Issues
 
