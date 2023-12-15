@@ -1,5 +1,0 @@
-our_approach_3 is based on the our_approach_2 and the herby generated LLM_ATR_results, including the actors similarity
-New: more actors, as reducing dummy in BPMNCreator.py
-
----
-try to reduce number of "finish"

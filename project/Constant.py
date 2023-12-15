@@ -2,7 +2,7 @@ DEBUG = False  # Default: False;  True: use small model, False: use large model
 
 LLM_real_actor = True  # Default: True; True: use LLM to decide if real actor based on LLM
 
-LLM_ATR = False  # Default: True; True: activate the LLM-assisted text refinement
+LLM_ATR = True  # Default: True; True: activate the LLM-assisted text refinement
 
 LLM_syntax_improval = True  # Default: True; True: activate the LLM-assisted syntax improvement
 

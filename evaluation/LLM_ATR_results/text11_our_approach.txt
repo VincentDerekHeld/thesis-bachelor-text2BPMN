@@ -1,4 +1,5 @@
-The data subject shall have the right to receive the personal data concerning him or her, which he or she has provided to a controller, in a structured, commonly used and machine-readable format and have the right to transmit those data to another controller.
- The data subject shall have the right to have the personal data transmitted directly from one controller to another.
- The exercise of the right shall be without prejudice to and shall not apply to processing necessary for the performance of a task carried out in the public interest or in the exercise of official authority vested in the controller.
- The right shall not adversely affect the rights and freedoms of others.
+The data subject shall have the right to receive the personal data concerning him or her, which he or she has provided to a controller, in a structured, commonly used and machine-readable format.
+ The data subject shall have the right to have the personal data transmitted directly from one controller to another, where technically feasible.
+ The exercise of the right shall be without prejudice to Article 17.
+ That right shall not apply to processing necessary for the performance of a task carried out in the public interest or in the exercise of official authority vested in the controller.
+ The right referred to in paragraph 1 shall not adversely affect the rights and freedoms of others.

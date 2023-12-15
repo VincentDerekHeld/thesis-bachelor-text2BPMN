@@ -1,4 +1,4 @@
-A customer brings in a defective computer and the CRS checks the defect and hands out a repair cost calculation back.
+The CRS checks the defect and hands out a repair cost calculation back.
  If the customer decides that the costs are acceptable, the process continues, otherwise she takes her computer home unrepaired.
  The ongoing repair consists of two activities, which are executed, in an arbitrary order.
  The first activity is to check and repair the hardware, whereas the second activity checks and configures the software.

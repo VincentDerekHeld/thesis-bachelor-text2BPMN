@@ -247,7 +247,7 @@ def create_activity_label(action, id, actor=None) -> str:
         str: the activity label
     """
     action_text = str(action)
-    action_text = action_text.replace("as ", "")
+    action_text = action_text.replace("as ", "like ")
     if actor is not None:
         """ "[" + str(structure.process.actor) + " " + str(structure.process.action) + "] as activity_" + str(structure.id) """
         return "[" + str(actor) + " " + action_text + "] as activity_" + str(id)
