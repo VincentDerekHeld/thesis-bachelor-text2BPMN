@@ -207,7 +207,7 @@ def extract_elements_vh(sentence, process):
     sentence_is_active = is_active(sentence)
     actor = determine_actor_sun(sentence)
     if actor:
-        actor = actor[actor.__len__() - 1]  # TODO:
+        actor = actor[actor.__len__() - 1]
     print("actor:", actor)
     # actor = determine_actor(actor, sentence_is_active)
     process.actor = create_actor(actor)

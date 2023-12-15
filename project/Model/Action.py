@@ -15,6 +15,7 @@ class LinkType(Enum):
     TO_PREV = 1
     TO_NEXT = 2
 
+
 class Action(ExtractedObject):
     def __init__(self, verb):
         super().__init__(verb)
@@ -57,8 +58,6 @@ class Action(ExtractedObject):
 
         if add_modal_verbs:
             if self.aux:
-                print(f"Action: Aux: {self.aux.text}") #TODO: me modal verbs
-                #TODO: implement LLM function, that checks if the aux is a modal verb
                 if self.aux.text.lower() in MODAL_VERBS:
                     str_utility(self.aux, result)
 

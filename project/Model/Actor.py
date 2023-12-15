@@ -34,7 +34,6 @@ class Actor(ExtractedObject):
 
         return string_list_to_string(actor)
 
-    # TODO 23-12-02: Done Similarity of Actors
     def determinate_full_name_vh(self) -> str:
         """
         :param token: Token that is part of the extended name
@@ -48,7 +47,7 @@ class Actor(ExtractedObject):
                 if subchild.dep_ == "compound":
                     full_name_tokens.extend(determinate_full_name(subchild))
 
-                # if subchild.dep_ == "conj":  # TODO also work for or? Only for ex.5 NOUN AND NOUN
+                # if subchild.dep_ == "conj":
                 #   full_name_tokens.extend(determinate_full_name(subchild))
 
                 # if subchild.dep_ == "cc":

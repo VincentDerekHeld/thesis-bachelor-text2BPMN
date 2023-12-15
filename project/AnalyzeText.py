@@ -478,7 +478,7 @@ def compare_actors_similarity(Actor1: str, Actor2: str, nlp):
     similarity_score = compare_actors_with_similarity(Actor1, Actor2, nlp)
     similarity_ratio = compare_actors_with_token(Actor1, Actor2, nlp)
     result = similarity_score > criteria_similarity_score and similarity_ratio > criteria_similarity_ratio
-    # print("Similarity{:<60}{:<60}{:<20}{:<10}{:<10}".format(result.__str__(), Actor1, Actor2, similarity_score, similarity_ratio))  # TODO: delete
+    # print("Similarity{:<60}{:<60}{:<20}{:<10}{:<10}".format(result.__str__(), Actor1, Actor2, similarity_score, similarity_ratio))
     return result
 
 

@@ -4,7 +4,7 @@ import spacy
 from spacy.tokens import Doc
 
 from project.Constant import DEBUG, resolve_enumeration, filter_irrelevant_information, transform_implicit_actions, \
-    filter_finish_activities
+    filter_finish_activities, BASE_PATH
 from project.LLM_API import generate_response_GPT3_instruct_model, generate_response_GPT4_model
 from project.Utilities import write_to_file, open_file, text_pre_processing
 
@@ -36,7 +36,7 @@ def LLM_assisted_refinement(text_input: str, nlp, title: str):
     """
     print("Start LLM-assisted refinement --- this can take some time...")
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
-    debug_mode = True  # TODO: change to DEBUG
+    debug_mode = True
     text_input = text_pre_processing(text_input)
     doc = nlp(text_input)  # Create doc object from input text for identification of listings and for sentence splitting
     outro = """\n ### TEXT ### \n"""
@@ -107,7 +107,6 @@ def LLM_assisted_refinement(text_input: str, nlp, title: str):
                 Example: "to ensure that the audit programme(s) are implemented and maintained." this part must be filtered.
     """ + filter_outro)
 
-    # TODO: maybe those parts can be combined
     if filter_irrelevant_information: prompts_GPT3_instruct.append(""" 
     ### Background Information: ###
     Information that describes the decision criteria for methods or techniques are not relevant and must be filtered.
@@ -133,13 +132,6 @@ def LLM_assisted_refinement(text_input: str, nlp, title: str):
         References to other Articles or Paragraphs are not relevant and must be filtered.
                 Example: "referred to in Article 22(1) and (4)" must be filtered.
                 Example: "in accordance with Article 55" must be filtered.
-    """ + filter_outro)
-
-    if False: prompts_GPT4.append("""
-    ### Background Information: ###
-        Information that describe explicit the end of an process (step) are not relevant and must be filtered.
-                Example: "finish the process instance" must be filtered.
-                Example: "the process instance is finished" must be filtered.
     """ + filter_outro)
 
     # Transform implicit actions into explicit actions
@@ -185,8 +177,9 @@ def LLM_assisted_refinement(text_input: str, nlp, title: str):
         result = result + " " + current_sent + "\n"
     result = result.strip()
     if debug_mode: print("**** Full description: **** \n" + result.replace("\n", " "))
-    write_to_file(result,
-                  f"/Users/vincentderekheld/PycharmProjects/text2BPMN-vincent/evaluation/LLM_ATR_results2/{title}.txt")  # TODO: change path, if DEBUG:
+
+    write_to_file(result, f"{BASE_PATH}/results/LLM_ATR_results/{title}.txt")
+    f"/Users/vincentderekheld/PycharmProjects/text2BPMN-vincent/evaluation/LLM_ATR_results2/{title}.txt"
     return result
 
 

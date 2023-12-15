@@ -55,12 +55,10 @@ def find_sub_sentence_start_end_index(sentence: Span, index_list: [int]):
     elif "S" in labels:
         if sentence._.parent is None:
             index_list = add_index(index_list, sentence.start)
-            index_list = add_index(index_list, sentence.end) #The organization
+            index_list = add_index(index_list, sentence.end)  # The organization
         elif not "SBAR" in sentence._.parent._.labels:
             index_list = add_index(index_list, sentence.start)
             index_list = add_index(index_list, sentence.end)
-    #elif "VP" in labels: #TODO: add me: Apporach 5
-     #   return index_list #TODO: add me: Approach 5
 
     children = list(sentence._.children)
 
@@ -121,16 +119,15 @@ def extract_elements(sentence, process):
     sentence_is_active = is_active(sentence)
 
     actor = determine_actor(sentence, sentence_is_active)
-    process.actor = create_actor(actor) #Actor is created an stored in the process
+    process.actor = create_actor(actor)  # Actor is created an stored in the process
 
     verb = determine_predicate(sentence, sentence_is_active)
     obj = determine_object(verb, sentence_is_active)
-    process.action = create_action(verb, obj) #Verb and object are created and stored in the process as action
+    process.action = create_action(verb, obj)  # Verb and object are created and stored in the process as action
 
     if process.action is not None:
-        process.action.active = sentence_is_active #Active bool is stored in the action
+        process.action.active = sentence_is_active  # Active bool is stored in the action
         for conjunct in process.action.token.conjuncts:
-            #print(f"Conjunct: {conjunct}") #TODO: 2023-12-06: conjuctions
             if conjunct == process.action.token:
                 continue
             if sentence.start < conjunct.i < sentence.end:

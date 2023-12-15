@@ -36,7 +36,7 @@ def generate_response_GPT3_instruct_model(prompt: str) -> str:
         response_data = response.json()
         if response_data['choices']:
             response_text = response_data['choices'][0]['text'].strip()
-            #response_text = filter_quotation_marks(response_text)
+            # response_text = filter_quotation_marks(response_text)
         else:
             raise ValueError("No LLM response received in data")
 
@@ -80,7 +80,7 @@ def generate_response_GPT4_model(prompt: str) -> str:
         ]
     )
     response_text = response.choices[0].message.content
-    #response_text = filter_quotation_marks(response_text)
+    # response_text = filter_quotation_marks(response_text)
     response_text = response_text.strip()
     return response_text
 

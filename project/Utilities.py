@@ -397,7 +397,6 @@ def open_file(path: str) -> str:
         raise IOError(f"An error occurred while reading the file at path {path}: {e}")
 
 
-# TODO 2023-12-02: Alternatives and Utilities
 def tokens_to_string(tokens):
     strBuilder = ""
     for token in tokens:
@@ -410,14 +409,14 @@ def determinate_full_name(token):
     :param token: Token that is part of the extended name
     :return: full name in right order as string
     """
-    full_name_tokens = [token]  # TODO: should token (parameter) be added to the list?
+    full_name_tokens = [token]
     for subchild in token.children:
         if subchild.dep_ == "amod":
             full_name_tokens.extend(determinate_full_name(subchild))
         if subchild.dep_ == "compound":
             full_name_tokens.extend(determinate_full_name(subchild))
 
-        if subchild.dep_ == "conj":  # TODO also work for or? Only for ex.5 NOUN AND NOUN
+        if subchild.dep_ == "conj":
             full_name_tokens.extend(determinate_full_name(subchild))
 
         if subchild.dep_ == "cc":

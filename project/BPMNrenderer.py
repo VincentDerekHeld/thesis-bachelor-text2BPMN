@@ -35,5 +35,4 @@ gateway_5-"no"
  """
     render(input_syntax, "/Users/vincentderekheld/PycharmProjects/text2BPMN-vincent/evaluation/test.png")
 
-
 " those for other specific processing situations = lane1.add_element("

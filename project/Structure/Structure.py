@@ -1,6 +1,6 @@
 from typing import Optional
 
-from project.Constant import filter_finish_activities, less_end_gateways
+from project.Constant import filter_finish_activities
 
 
 class Structure:
@@ -12,8 +12,7 @@ class Structure:
         self.is_end_activity = False
         if filter_finish_activities:
             self.is_finish_activity = False
-        if less_end_gateways:
-            self.need_end_gateway = False
+        self.need_end_gateway = False
 
         self.previous: Optional[Structure] = None
         self.next: Optional[Structure] = None

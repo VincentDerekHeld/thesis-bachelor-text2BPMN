@@ -1,9 +1,11 @@
 import spacy
 from spacy.pipeline.dep_parser import Language
 
+
 def print_all_texts(input: str, text_number):
     print("Text: " + text_number.__str__() + "\n"
           + input + "\n")
+
 
 def number_of_sentences():
     itaration = 1
@@ -34,7 +36,7 @@ def splitting_test():
     text_input = open(input_path, 'r').read().replace('\n', ' ')
     nlp = spacy.load('en_core_web_trf')
 
-    @Language.component("custom_sentencizer")  # TODO: me
+    @Language.component("custom_sentencizer")
     def custom_sentencizer(doc):
         """Custom sentencizer that sets 'LS' tokens as sentence starts. It is added to the pipeline before the parser.
            Here, it is not added, because the LLM resolves the problem with a higher quality."""
@@ -48,5 +50,6 @@ def splitting_test():
     doc = nlp(text_input)
     for sent in doc.sents:
         print(f" Sentence: {sent.text}")
+
 
 splitting_test()

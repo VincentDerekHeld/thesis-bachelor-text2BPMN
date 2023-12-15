@@ -6,7 +6,7 @@ from Structure.Activity import Activity
 from Structure.Block import ConditionBlock, AndBlock, ConditionType
 from Structure.Structure import Structure
 from project.Constant import LLM_syntax_improval, resolve_first_lane_problem, resolve_syntax_problems, \
-    filter_finish_activities, less_end_gateways, less_end_gateways2
+    filter_finish_activities, less_end_gateways2
 from project.LLM_Task_Labels import improve_syntax, improve_syntax_tasks, improve_taks_labeles_LLM
 
 
@@ -96,7 +96,7 @@ def create_bpmn_description(structure_list: [Structure], actor_list: list, title
 
     lanes = {}
     connections = []
-    print(f"Actor List: {actor_list}")  # TODO: me
+    print(f"Actor List: {actor_list}")
     if resolve_first_lane_problem:
         for actor in actor_list:
             lanes[actor] = []
@@ -222,7 +222,6 @@ def create_bpmn_description(structure_list: [Structure], actor_list: list, title
             if lane == "dummy":
                 result += "lane: \n"
             else:
-                # if len(lanes[lane]) > 0: #TODO evaluate if we should added if statement
                 result += "lane: " + lane + "\n"
 
             for element in lanes[lane]:

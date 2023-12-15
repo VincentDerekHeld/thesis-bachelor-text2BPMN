@@ -1,6 +1,3 @@
-"""
-This is an initial approach to extract the process model from a text developed by Vincent Held.
-"""
 import spacy
 
 nlp = spacy.load("en_core_web_lg")
@@ -41,17 +38,17 @@ def is_active1(sent) -> bool:
     return False
 
 
-def determine_condition(sent_root):
+def determine_condition(sent_root):  # sent_root = assamble
     active = True
     print("determine_condition:", active, sent_root.text)
     full_name_tokens = []
     for token in sent_root.children:
         if active:
-            if token.dep_ == "advcl":
+            if token.dep_ == "advcl":  # token = reserved
                 full_name_tokens = extract_from_active_sentence(token)
         elif not active:
             for token1 in token.children:
-                if (token1.dep_ == "cc" and token1.text in AND_criteria):
+                if (token1.dep_ == "cc" and token1.text in AND_criteria):  # token1 = and
                     full_name_tokens.append(token1)
                     for token2 in token.children:
                         if token2.dep_ == "conj" and (token2.pos_ == "VERB" or token2.pos_ == "AUX"):
@@ -118,7 +115,6 @@ def extract_from_active_sentence(sent_root, conditonal=False) -> []:
             temp_task.object = determinate_full_name(token)
 
         # check if verb has a prep
-
         if token.dep_ == "prep":
             helpers.append(tokens_to_string(determinate_full_name(token)))
             temp_task.helper = determinate_full_name(token)
@@ -209,7 +205,7 @@ def determinate_full_name(token):
     :param token: Token that is part of the extended name
     :return: full name as string
     """
-    full_name_tokens = [token]  #
+    full_name_tokens = [token]
     for subchild in token.children:
         if subchild.dep_ == "amod":
             full_name_tokens.extend(determinate_full_name(subchild))
@@ -268,7 +264,6 @@ def check_verb_for_advl(token):
                 - can be introduced by subordinating conjunctions such as "although," 
                         "because," "when," "while," "if," "since," "until," and many others
             """
-
             print("advcl: ", sub_token.text)
             active = is_active(sub_token)
             print("check_verb_for_advl: active: ", active)
@@ -374,11 +369,11 @@ def determine_constuctions(sent):
 
 def determine_if(sent):
     for token in sent:
-        if token.pos_ == "SCONJ":
+        if token.pos_ == "SCONJ":  # IF / whenever
             return True
 
 
 def determine_else(sent):
     for token in sent:
-        if token.pos_ == "SCONJ":
+        if token.pos_ == "SCONJ":  # IF / whenever
             return True
